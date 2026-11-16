@@ -1,0 +1,30 @@
+{
+  "createdAt": "2026-11-15T03:34:06.266Z",
+  "base": "https://growza-api.growza-worker.workers.dev",
+  "health": {
+    "ok": true,
+    "ready": true,
+    "ai": true
+  },
+  "enrollmentStatus": 201,
+  "topicStatus": 200,
+  "elapsedMs": 959,
+  "result": {
+    "topics": [
+      {
+        "title": "Limits",
+        "startPage": 1,
+        "endPage": 1
+      },
+      {
+        "title": "Derivatives",
+        "startPage": 2,
+        "endPage": 2
+      }
+    ]
+  },
+  "verificationInstallation": true,
+  "providerUsageAvailable": false,
+  "deniedOriginStatus": 403,
+  "removedAuthStatus": 404
+}

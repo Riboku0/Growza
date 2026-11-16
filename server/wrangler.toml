@@ -1,0 +1,29 @@
+name = "growza-api"
+account_id = "eea9eabee355010130f32b5adbb58c15"
+workers_dev = true
+preview_urls = false
+main = "src/index.js"
+compatibility_date = "2026-11-15"
+
+[vars]
+AI_MODEL = "@cf/google/gemma-4-26b-a4b-it"
+AI_ENABLED = "true"
+AI_GLOBAL_DAILY_LIMIT = "30"
+ALLOWED_ORIGINS = ""
+# Set IP_HASH_SECRET using Wrangler; no account passwords or provider keys in the app.
+# Enabled after owner-confirmed Workers Free and successful live synthetic PDF evaluation.
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "growza-api-limits"
+database_id = "00ac0537-1408-40db-ac1d-5a77bb1b671d"
+migrations_dir = "migrations"
+
+[triggers]
+crons = ["0 4 * * *"]
+
+[observability]
+enabled = false

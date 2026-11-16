@@ -1,0 +1,16 @@
+# Approved growth changes - implemented 15 November 2026
+
+The user explicitly approved core growth and focus-record changes on 15 November 2026, overriding the earlier UI-only scope. The implementation follows the proposal below with the approved multiplier/minimum adjustment. All 122 tests pass; Analyze is clean.
+
+Concrete proposed local revision:
+- End-session quality: Full 100%, Half 60%, Distracted 25%; skipping defaults to 100%. Record actual focused time in full. Store an optional enum per record, defaulting legacy records to Full. Keep record IDs and spans unchanged.
+- Five-minute minimum stays based on actual focused time, excluding pauses. Daily growth budget remains 240 actual eligible focus minutes shared by all subjects; quality scales stem growth, not statistics or the budget.
+- Relative material target: max(300 minutes, sum of topic effort estimates x 2.0), with targetMultiplier and minTarget in growth_rules.dart (default topic estimate: 25 minutes). Five stage fractions: 0%, 5%, 20%, 50%, 100%. A subject without topics keeps the 1200-minute fallback until topics exist; no division by zero or removal of past credited minutes. Explain the fallback in its stage preview.
+- Keep credited history and confirmed flowers. Changing topic estimates changes target/progress, not recorded minutes. All values live in growth_rules.dart.
+- A gentle daily streak uses at least five actual focus minutes per local day. Missing a day resets only the streak; plants keep their growth.
+
+Validation before delivery: legacy JSON round-trip, unknown-quality rejection, all three multipliers, short/partial/paused sessions, actual-time statistics, shared cap under mixed qualities, midnight allocation, relative targets/empty subjects, target edits, preserved IDs, separate topic completion and pending-review replay. Run Analyze and the full unit/widget suite. Hardware timer lifecycle checks await the user's phone.
+
+Implemented: quality review with legacy Full defaults, unchanged actual-time statistics and record IDs, relative targets, shared actual-time cap, separate topic flowers and gentle streak. The empty-subject preview explains its 1200-minute fallback. Calculus II preview uses an illustrative 300-minute estimate sum and a 600-minute target. The growth APK was subsequently installed on Moto G75 on 15 November. Workspace bytes were preserved during installation; subjects/topics, historical IDs, spans and quality values were checked after launch. Legacy records received Full defaults. Runtime logs were clean; visual and native lifecycle checks remain pending because the phone was locked. Backup export/import and backend integration remain outside this revision.
+
+Changed source files: growth_rules.dart, focus_record.dart, growth_ledger.dart, study_storage.dart, main.dart, session_completion.dart, focus_screen.dart, study_garden.dart, app_translations.dart and subject_setup.dart (default topic estimate binding only). New tests: relative_growth_test.dart (14 cases) and growth_review_test.dart (7 cases). Existing growth_ledger_test.dart, garden_stage3_test.dart and widget_test.dart stage expectations now reflect the approved relative targets. Calculus II preview generator: tool/previews/calculus_growth_preview_test.dart.

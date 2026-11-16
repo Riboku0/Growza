@@ -1,0 +1,6 @@
+Asset: D:/flutter project/assets/images/study-forest-v1.png
+Method: Built-in image_gen.imagegen (not CLI)
+Purpose: Bundled background for the Home progress banner.
+Prompt:
+Create one beautiful original background image asset for the main progress banner in a calm student study app. This is a landscape background only, not an app mockup. A panoramic view of layered misty mountain ridges and a pine forest at gentle early morning, deep forest-green evergreen silhouettes in the foreground, muted sage and olive mid-distance, warm pale cream mist and soft sunlight in the distance. Quiet, photographic yet slightly painterly matte editorial treatment, fine natural texture, elegant atmospheric depth. Wide cinematic composition, approximately 3:1 panoramic landscape, enough dark forest on the left and lower area to support white progress text placed later in code; the mountain horizon and most distant light stay in the upper half, with lovely depth visible toward the center-right. No people, no buildings, no words, no numbers, no typography, no interface, no frames, no cards, no logos, no watermark. Intended as a real bundled background asset in a Flutter application.
+

@@ -1,0 +1,10 @@
+{
+  "installed": true,
+  "package": "com.example.istudy",
+  "device": "Moto G75",
+  "preservedStudyAccountAndSecureStorageFiles": true,
+  "launched": true,
+  "apkSha256": "4c88dfc22151a3d5393dfe54332c40b208bb28631130a68de5a2019ea5c90faf",
+  "validation": "Flutter Analyze: no issues. All 182 Flutter tests passed; all 8 targeted schedule/calendar tests passed.",
+  "scope": "Schedule + offers manual study or optional Blackboard/calendar import. Explicit preview/connection and existing reminder/completion rules retained. Existing connected-calendar management remains."
+}

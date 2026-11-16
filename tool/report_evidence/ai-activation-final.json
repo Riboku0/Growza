@@ -1,0 +1,451 @@
+{
+  "date": "15 November 2026",
+  "model": "@cf/google/gemma-4-26b-a4b-it",
+  "plan": "Workers Free, confirmed explicitly by owner; billing API read not permitted by current OAuth scopes. No upgrade or paid credits enabled.",
+  "version": "543ea78b-c31a-4b1b-9a39-1f9353b4ba59",
+  "health": {
+    "ok": true,
+    "ready": true,
+    "ai": true
+  },
+  "productionSmokeMs": 959,
+  "files": [
+    {
+      "name": "calculus-ar",
+      "pages": 40,
+      "status": 200,
+      "elapsedMs": 12516,
+      "chunks": 2,
+      "topicCount": 40,
+      "coveredPages": 40,
+      "exactOutlineMatches": 40,
+      "neurons": 28.818181037902832,
+      "topics": [
+        {
+          "title": "مفهوم الدالة",
+          "startPage": 1,
+          "endPage": 1
+        },
+        {
+          "title": "مجال الدالة ومداها",
+          "startPage": 2,
+          "endPage": 2
+        },
+        {
+          "title": "الدوال الخطية",
+          "startPage": 3,
+          "endPage": 3
+        },
+        {
+          "title": "الدوال التربيعية",
+          "startPage": 4,
+          "endPage": 4
+        },
+        {
+          "title": "الدوال الأسية",
+          "startPage": 5,
+          "endPage": 5
+        },
+        {
+          "title": "الدوال اللوغاريتمية",
+          "startPage": 6,
+          "endPage": 6
+        },
+        {
+          "title": "تركيب الدوال",
+          "startPage": 7,
+          "endPage": 7
+        },
+        {
+          "title": "الدالة العكسية",
+          "startPage": 8,
+          "endPage": 8
+        },
+        {
+          "title": "مفهوم النهاية",
+          "startPage": 9,
+          "endPage": 9
+        },
+        {
+          "title": "نهايات الدوال الجبرية",
+          "startPage": 10,
+          "endPage": 10
+        },
+        {
+          "title": "النهايات من اليمين واليسار",
+          "startPage": 11,
+          "endPage": 11
+        },
+        {
+          "title": "النهايات عند اللانهاية",
+          "startPage": 12,
+          "endPage": 12
+        },
+        {
+          "title": "الاتصال عند نقطة",
+          "startPage": 13,
+          "endPage": 13
+        },
+        {
+          "title": "الاتصال على فترة",
+          "startPage": 14,
+          "endPage": 14
+        },
+        {
+          "title": "تعريف المشتقة",
+          "startPage": 15,
+          "endPage": 15
+        },
+        {
+          "title": "قواعد الاشتقاق",
+          "startPage": 16,
+          "endPage": 16
+        },
+        {
+          "title": "قاعدة الضرب",
+          "startPage": 17,
+          "endPage": 17
+        },
+        {
+          "title": "قاعدة القسمة",
+          "startPage": 18,
+          "endPage": 18
+        },
+        {
+          "title": "قاعدة السلسلة",
+          "startPage": 19,
+          "endPage": 19
+        },
+        {
+          "title": "الاشتقاق الضمني",
+          "startPage": 20,
+          "endPage": 20
+        },
+        {
+          "title": "مشتقات الدوال المثلثية",
+          "startPage": 21,
+          "endPage": 21
+        },
+        {
+          "title": "مشتقات الدوال الأسية",
+          "startPage": 22,
+          "endPage": 22
+        },
+        {
+          "title": "مشتقات الدوال اللوغاريتمية",
+          "startPage": 23,
+          "endPage": 23
+        },
+        {
+          "title": "المعدلات المرتبطة",
+          "startPage": 24,
+          "endPage": 24
+        },
+        {
+          "title": "تقريب الدوال بالمشتقة",
+          "startPage": 25,
+          "endPage": 25
+        },
+        {
+          "title": "القيم العظمى والصغرى",
+          "startPage": 26,
+          "endPage": 26
+        },
+        {
+          "title": "التزايد والتناقص",
+          "startPage": 27,
+          "endPage": 27
+        },
+        {
+          "title": "التقعر ونقاط الانعطاف",
+          "startPage": 28,
+          "endPage": 28
+        },
+        {
+          "title": "تطبيقات التحسين",
+          "startPage": 29,
+          "endPage": 29
+        },
+        {
+          "title": "مفهوم التكامل",
+          "startPage": 30,
+          "endPage": 30
+        },
+        {
+          "title": "التكامل غير المحدد",
+          "startPage": 31,
+          "endPage": 31
+        },
+        {
+          "title": "قواعد التكامل الأساسية",
+          "startPage": 32,
+          "endPage": 32
+        },
+        {
+          "title": "التكامل بالتعويض",
+          "startPage": 33,
+          "endPage": 33
+        },
+        {
+          "title": "التكامل المحدد",
+          "startPage": 34,
+          "endPage": 34
+        },
+        {
+          "title": "النظرية الأساسية للتفاضل والتكامل",
+          "startPage": 35,
+          "endPage": 35
+        },
+        {
+          "title": "المساحة تحت المنحنى",
+          "startPage": 36,
+          "endPage": 36
+        },
+        {
+          "title": "المساحة بين منحنيين",
+          "startPage": 37,
+          "endPage": 37
+        },
+        {
+          "title": "حجوم الأجسام الدورانية",
+          "startPage": 38,
+          "endPage": 38
+        },
+        {
+          "title": "متوسط قيمة الدالة",
+          "startPage": 39,
+          "endPage": 39
+        },
+        {
+          "title": "مراجعة تطبيقات التكامل",
+          "startPage": 40,
+          "endPage": 40
+        }
+      ]
+    },
+    {
+      "name": "biology-en",
+      "pages": 40,
+      "status": 200,
+      "elapsedMs": 7442,
+      "chunks": 2,
+      "topicCount": 40,
+      "coveredPages": 40,
+      "exactOutlineMatches": 40,
+      "neurons": 24.318181037902832,
+      "topics": [
+        {
+          "title": "Introduction to Cells",
+          "startPage": 1,
+          "endPage": 1
+        },
+        {
+          "title": "Microscopy",
+          "startPage": 2,
+          "endPage": 2
+        },
+        {
+          "title": "Prokaryotic Cells",
+          "startPage": 3,
+          "endPage": 3
+        },
+        {
+          "title": "Eukaryotic Cells",
+          "startPage": 4,
+          "endPage": 4
+        },
+        {
+          "title": "Plasma Membrane",
+          "startPage": 5,
+          "endPage": 5
+        },
+        {
+          "title": "Membrane Transport",
+          "startPage": 6,
+          "endPage": 6
+        },
+        {
+          "title": "Osmosis",
+          "startPage": 7,
+          "endPage": 7
+        },
+        {
+          "title": "Cell Organelles",
+          "startPage": 8,
+          "endPage": 8
+        },
+        {
+          "title": "The Nucleus",
+          "startPage": 9,
+          "endPage": 9
+        },
+        {
+          "title": "DNA Structure",
+          "startPage": 10,
+          "endPage": 10
+        },
+        {
+          "title": "DNA Replication",
+          "startPage": 11,
+          "endPage": 11
+        },
+        {
+          "title": "RNA Structure",
+          "startPage": 12,
+          "endPage": 12
+        },
+        {
+          "title": "Transcription",
+          "startPage": 13,
+          "endPage": 13
+        },
+        {
+          "title": "Translation",
+          "startPage": 14,
+          "endPage": 14
+        },
+        {
+          "title": "Protein Structure",
+          "startPage": 15,
+          "endPage": 15
+        },
+        {
+          "title": "Enzymes",
+          "startPage": 16,
+          "endPage": 16
+        },
+        {
+          "title": "Enzyme Regulation",
+          "startPage": 17,
+          "endPage": 17
+        },
+        {
+          "title": "ATP and Energy",
+          "startPage": 18,
+          "endPage": 18
+        },
+        {
+          "title": "Glycolysis",
+          "startPage": 19,
+          "endPage": 19
+        },
+        {
+          "title": "Cellular Respiration",
+          "startPage": 20,
+          "endPage": 20
+        },
+        {
+          "title": "The Krebs Cycle",
+          "startPage": 21,
+          "endPage": 21
+        },
+        {
+          "title": "Electron Transport",
+          "startPage": 22,
+          "endPage": 22
+        },
+        {
+          "title": "Photosynthesis Overview",
+          "startPage": 23,
+          "endPage": 23
+        },
+        {
+          "title": "Light Reactions",
+          "startPage": 24,
+          "endPage": 24
+        },
+        {
+          "title": "The Calvin Cycle",
+          "startPage": 25,
+          "endPage": 25
+        },
+        {
+          "title": "Cell Cycle",
+          "startPage": 26,
+          "endPage": 26
+        },
+        {
+          "title": "Mitosis",
+          "startPage": 27,
+          "endPage": 27
+        },
+        {
+          "title": "Meiosis",
+          "startPage": 28,
+          "endPage": 28
+        },
+        {
+          "title": "Mendelian Inheritance",
+          "startPage": 29,
+          "endPage": 29
+        },
+        {
+          "title": "Genetic Variation",
+          "startPage": 30,
+          "endPage": 30
+        },
+        {
+          "title": "Chromosomes",
+          "startPage": 31,
+          "endPage": 31
+        },
+        {
+          "title": "Mutations",
+          "startPage": 32,
+          "endPage": 32
+        },
+        {
+          "title": "Gene Regulation",
+          "startPage": 33,
+          "endPage": 33
+        },
+        {
+          "title": "Cell Communication",
+          "startPage": 34,
+          "endPage": 34
+        },
+        {
+          "title": "Signal Transduction",
+          "startPage": 35,
+          "endPage": 35
+        },
+        {
+          "title": "Immune Cells",
+          "startPage": 36,
+          "endPage": 36
+        },
+        {
+          "title": "Stem Cells",
+          "startPage": 37,
+          "endPage": 37
+        },
+        {
+          "title": "Cancer Biology",
+          "startPage": 38,
+          "endPage": 38
+        },
+        {
+          "title": "Laboratory Safety",
+          "startPage": 39,
+          "endPage": 39
+        },
+        {
+          "title": "Experimental Design",
+          "startPage": 40,
+          "endPage": 40
+        }
+      ]
+    }
+  ],
+  "measuredBenchmarkNeurons": 53.136362075805664,
+  "productionQuota": {
+    "installations": 1,
+    "file_attempts": 1,
+    "reserved_model_calls": 1,
+    "enrollments": 1
+  },
+  "validation": "Flutter Analyze: no issues (128.4 seconds). All 181 Flutter tests and 28 Worker tests passed; Wrangler deployment dry-run passed. An initial local workerd fetch failed during concurrent startup; isolated and complete-suite rechecks passed without a source change.",
+  "limits": "Existing limits unchanged: 3 file attempts/installation/day; at most 3 batches/file, 30 global and 10 network model calls/day. Free allocation is 10,000 Neurons/day, resetting at UTC midnight.",
+  "delivery": "Worker-only change; existing Moto G75 APK already contains the endpoint and needs no reinstall. No device, study SQLite, growth, local account or synchronization changes.",
+  "limitations": "Synthetic outline tests are not validation of arbitrary student PDFs, scans, full-document comprehension or native end-to-end AI interaction. Extraction and the preview remain bounded; consumption varies with text and generated topics."
+}

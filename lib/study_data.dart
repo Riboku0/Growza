@@ -18,7 +18,7 @@ class StudySubject {
 
   final String id;
   final String name;
-  final DateTime exam;
+  final DateTime? exam;
   final List<StudyPart> parts;
   final String? pdfName;
   final int _nextPartId;
@@ -41,7 +41,7 @@ class StudySubject {
   Map<String, Object?> toJson() => {
     'id': id,
     'name': name,
-    'exam': exam.toIso8601String(),
+    'exam': exam?.toIso8601String(),
     'pdfName': pdfName,
     'nextPartId': nextPartId,
     'parts': parts.map((part) => part.toJson()).toList(),
@@ -49,7 +49,7 @@ class StudySubject {
 
   factory StudySubject.fromJson(Map<String, dynamic> json) => StudySubject(
     json['name'] as String,
-    DateTime.parse(json['exam'] as String),
+    json['exam'] == null ? null : DateTime.parse(json['exam'] as String),
     (json['parts'] as List)
         .map(
           (part) => StudyPart.fromJson({
@@ -213,7 +213,8 @@ DateTime atTime(DateTime date, int hour, [int minute = 0]) =>
 String clockLabel(DateTime date) =>
     '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
 
-String examLabel(BuildContext context, DateTime exam) {
+String examLabel(BuildContext context, DateTime? exam) {
+  if (exam == null) return tr(context, "بلا موعد اختبار");
   final date = MaterialLocalizations.of(context).formatShortMonthDay(exam);
   return exam == DateUtils.dateOnly(exam)
       ? date
@@ -239,3 +240,10 @@ String subjectLabel(String name, {BuildContext? context}) =>
     name == 'General study'
     ? (context == null ? 'مذاكرة عامة' : tr(context, 'مذاكرة عامة'))
     : name;
+
+// Undated subjects follow dated subjects without inventing a deadline.
+int compareExamDates(DateTime? a, DateTime? b) {
+  if (a == null) return b == null ? 0 : 1;
+  if (b == null) return -1;
+  return a.compareTo(b);
+}

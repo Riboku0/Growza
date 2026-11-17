@@ -7,7 +7,8 @@ List<CalendarItem> examCalendarItems(
   List<StudySubject> subjects, {
   String languageCode = 'ar',
 }) {
-  final sorted = [...subjects]..sort((a, b) => a.name.compareTo(b.name));
+  final sorted = subjects.where((s) => s.exam != null).toList()
+    ..sort((a, b) => a.name.compareTo(b.name));
   final used = <int>{};
   return [for (final subject in sorted) _examItem(subject, used, languageCode)];
 }
@@ -17,6 +18,7 @@ CalendarItem _examItem(
   Set<int> used,
   String languageCode,
 ) {
+  final exam = subject.exam!;
   var hash = 2166136261;
   for (final unit in subject.name.codeUnits) {
     hash = ((hash ^ unit) * 16777619) & 0x1fffffff;
@@ -33,7 +35,7 @@ CalendarItem _examItem(
     title: languageCode == 'en'
         ? 'Exam · ${subject.name}'
         : 'اختبار · ${subject.name}',
-    start: subject.exam,
-    dateOnly: subject.exam == DateUtils.dateOnly(subject.exam),
+    start: exam,
+    dateOnly: exam == DateUtils.dateOnly(exam),
   );
 }

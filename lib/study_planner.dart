@@ -8,7 +8,7 @@ List<StudyTask> pendingTasks(List<StudySubject> subjects) {
         if (!part.completed) (subject: subject, part: part),
   ];
   return tasks..sort((a, b) {
-    final exam = a.subject.exam.compareTo(b.subject.exam);
+    final exam = compareExamDates(a.subject.exam, b.subject.exam);
     if (exam != 0) return exam;
     if (a.part.priority != b.part.priority) return a.part.priority ? -1 : 1;
     final subject = a.subject.name.compareTo(b.subject.name);
@@ -72,7 +72,7 @@ class StudyPlan {
     for (final task in tasks) {
       if (placed.contains(task.key)) continue;
       final exam = task.subject.exam;
-      final limit = exam.isBefore(end) ? exam : end;
+      final limit = exam != null && exam.isBefore(end) ? exam : end;
       final duration = Duration(minutes: task.part.minutes) + studyBreak;
       var slot = start;
       for (final block in busy) {

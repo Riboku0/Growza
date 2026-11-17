@@ -170,7 +170,7 @@ class GrowthLedger {
   PlantGrowth forSubject(
     String subjectId, {
     required DateTime now,
-    required DateTime exam,
+    required DateTime? exam,
     required int completedTopics,
     required int totalTopics,
     bool isFocusing = false,
@@ -195,10 +195,13 @@ class GrowthLedger {
         if (last == null || span.end.isAfter(last)) last = span.end;
       }
     }
-    final localExam = exam.toLocal();
-    final cutoff = localExam == _day(localExam)
-        ? DateTime(localExam.year, localExam.month, localExam.day + 1)
-        : localExam;
+    DateTime? cutoff;
+    if (exam != null) {
+      final localExam = exam.toLocal();
+      cutoff = localExam == _day(localExam)
+          ? DateTime(localExam.year, localExam.month, localExam.day + 1)
+          : localExam;
+    }
     return PlantGrowth(
       focused: focused,
       target: target,
@@ -207,7 +210,7 @@ class GrowthLedger {
           ? 0
           : (completedTopics / totalTopics).clamp(0.0, 1.0),
       lastFocusedAt: last,
-      harvested: !cutoff.isAfter(now),
+      harvested: cutoff != null && !cutoff.isAfter(now),
       resting: !isFocusing && last != null && _day(last).isBefore(_day(now)),
     );
   }

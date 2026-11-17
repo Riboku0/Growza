@@ -81,3 +81,11 @@ flutter build apk --release --target-platform android-arm64 --dart-define-from-f
 ```
 
 The current SDK filters development-only plug-ins in Release. Reusing stale generated registration can incorrectly reference `integration_test`. No dependency or Flutter SDK upgrade was required. Forward-compatibility warnings from `workmanager_android` remain a future SDK-migration consideration.
+
+## Optional examination dates - 17 November 2026
+
+Examination dates are optional in manual and PDF-assisted subject creation. A date may be added or removed later; date-only exams are allowed today. Undated subjects have no exam countdown, event or reminders and are not automatically harvested. Planning uses the selected study window without inventing a deadline.
+
+Flutter Analyze is clean and all 208 Flutter tests passed. Historical SQLite schemas 1 and 2 upgrade to schema 3 with all table rows and foreign keys preserved; the exam column accepts SQL NULL. Removal cancels old reminders. JSON/backup round-trips, manual/PDF creation, recommendations and planning without an exam are covered.
+
+The signed update was installed on Moto G75 and opened with the saved workspace visible. No test subjects were created in the student workspace. Full undated creation is covered by automated tests; on-device inspection ended when the phone relocked. The upload source was synchronized without Git commands.

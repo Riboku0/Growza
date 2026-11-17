@@ -65,10 +65,11 @@ class ScheduleView extends StatelessWidget {
   bool _hasPending(DateTime date) =>
       subjects.any(
         (s) =>
+            s.exam != null &&
             DateUtils.isSameDay(s.exam, date) &&
-            (s.exam == DateUtils.dateOnly(s.exam)
-                    ? dayOffset(s.exam, 1)
-                    : s.exam)
+            (s.exam == DateUtils.dateOnly(s.exam!)
+                    ? dayOffset(s.exam!, 1)
+                    : s.exam!)
                 .isAfter(now),
       ) ||
       sessions.any(
@@ -109,14 +110,14 @@ class ScheduleView extends StatelessWidget {
     for (final subject in subjects.where(
       (s) => DateUtils.isSameDay(s.exam, day),
     )) {
-      final allDay = subject.exam == DateUtils.dateOnly(subject.exam);
+      final exam = subject.exam;
+      if (exam == null) continue;
+      final allDay = exam == DateUtils.dateOnly(exam);
       entries.add((
-        time: subject.exam,
+        time: exam,
         allDay: allDay,
         child: _TimelineRow(
-          time: allDay
-              ? tr(context, "طوال اليوم")
-              : _time(context, subject.exam),
+          time: allDay ? tr(context, "طوال اليوم") : _time(context, exam),
           title: tr(context, "اختبار · {0}", [subject.name]),
           subtitle: allDay
               ? tr(context, "موعد اختبار · الوقت غير محدد")
@@ -196,7 +197,7 @@ class ScheduleView extends StatelessWidget {
     });
     final dates =
         <DateTime>[
-              ...subjects.map((s) => s.exam),
+              ...subjects.map((s) => s.exam).whereType<DateTime>(),
               ...sessions.map((s) => s.start),
               ...calendarItems
                   .where((e) => !e.completedAt(now))

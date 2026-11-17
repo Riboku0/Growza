@@ -44,7 +44,7 @@ class HomeProgressCard extends StatelessWidget {
       children: [
         if (current != null)
           Text(
-            recommended
+            recommended && current.exam != null
                 ? tr(context, "مقترحة لقرب اختبارها")
                 : wasStudied
                 ? tr(context, "آخر مادة ذاكرتها")
@@ -135,16 +135,17 @@ class HomeProgressCard extends StatelessWidget {
                 tr(context, plantStageLabels[stage]!),
                 style: TextStyle(fontSize: 14, color: p.secondaryText),
               ),
-              MotionValue(
-                localizedCountdown(
-                  context,
-                  current.exam,
-                  now ?? DateTime.now(),
+              if (current.exam != null)
+                MotionValue(
+                  localizedCountdown(
+                    context,
+                    current.exam!,
+                    now ?? DateTime.now(),
+                  ),
+                  key: ValueKey('home-exam-countdown'),
+                  align: TextAlign.center,
+                  style: TextStyle(fontSize: 14, color: p.secondaryText),
                 ),
-                key: ValueKey('home-exam-countdown'),
-                align: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: p.secondaryText),
-              ),
             ],
           ),
           SizedBox(height: 10),

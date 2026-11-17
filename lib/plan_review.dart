@@ -267,7 +267,8 @@ class _PlanReviewState extends State<PlanReview> {
                     12,
                     color: growzaColor(context, amberInk),
                   ),
-                if (!_start.isBefore(task.subject.exam))
+                if (task.subject.exam != null &&
+                    !_start.isBefore(task.subject.exam!))
                   copy(
                     tr(context, "تبدأ هذه الفترة بعد موعد الاختبار."),
                     12,

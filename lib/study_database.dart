@@ -18,7 +18,7 @@ class StudyDatabase {
   Future<Database> _open() => _factory.openDatabase(
     path,
     options: OpenDatabaseOptions(
-      version: 2,
+      version: 3,
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await db.execute('ALTER TABLE topics ADD COLUMN pdf_name TEXT');
@@ -26,15 +26,36 @@ class StudyDatabase {
             'UPDATE topics SET pdf_name = (SELECT pdf_name FROM subjects WHERE subjects.id = topics.subject_id) WHERE start_page IS NOT NULL',
           );
         }
+        if (oldVersion < 3) {
+          await db.execute(
+            'CREATE TABLE subjects_new (id TEXT PRIMARY KEY, position INTEGER NOT NULL, name TEXT NOT NULL, exam TEXT, pdf_name TEXT, next_part_id INTEGER NOT NULL)',
+          );
+          await db.execute(
+            'INSERT INTO subjects_new SELECT id, position, name, exam, pdf_name, next_part_id FROM subjects',
+          );
+          await db.execute('DROP TABLE subjects');
+          await db.execute('ALTER TABLE subjects_new RENAME TO subjects');
+          if ((await db.rawQuery('PRAGMA foreign_key_check')).isNotEmpty) {
+            throw StateError('Study migration failed its foreign-key check');
+          }
+        }
       },
+      onOpen: (db) async => db.execute('PRAGMA foreign_keys = ON'),
       onConfigure: (db) async {
-        await db.execute('PRAGMA foreign_keys = ON');
+        final previousVersion = await db.getVersion();
+        // SQLite table reconstruction requires disabling foreign keys before
+        // the upgrade transaction, then restoring them in onOpen.
+        await db.execute(
+          previousVersion > 0 && previousVersion < 3
+              ? 'PRAGMA foreign_keys = OFF'
+              : 'PRAGMA foreign_keys = ON',
+        );
         await db.execute('PRAGMA busy_timeout = 10000');
       },
       onCreate: (db, version) async {
         for (final sql in [
           'CREATE TABLE workspace_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
-          'CREATE TABLE subjects (id TEXT PRIMARY KEY, position INTEGER NOT NULL, name TEXT NOT NULL, exam TEXT NOT NULL, pdf_name TEXT, next_part_id INTEGER NOT NULL)',
+          'CREATE TABLE subjects (id TEXT PRIMARY KEY, position INTEGER NOT NULL, name TEXT NOT NULL, exam TEXT, pdf_name TEXT, next_part_id INTEGER NOT NULL)',
           'CREATE TABLE topics (subject_id TEXT NOT NULL REFERENCES subjects(id) ON DELETE CASCADE, id INTEGER NOT NULL, position INTEGER NOT NULL, title TEXT NOT NULL, minutes INTEGER NOT NULL, priority INTEGER NOT NULL, completed INTEGER NOT NULL, start_page INTEGER, end_page INTEGER, pdf_name TEXT, PRIMARY KEY(subject_id,id))',
           'CREATE TABLE study_sessions (position INTEGER PRIMARY KEY, subject TEXT NOT NULL, topic TEXT NOT NULL, start TEXT NOT NULL, minutes INTEGER NOT NULL, part_id INTEGER, completed INTEGER NOT NULL, fixed INTEGER NOT NULL)',
           // No subject foreign key: deleted-subject focus history must survive.

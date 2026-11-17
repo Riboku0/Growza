@@ -63,7 +63,7 @@ class CalendarEngine {
     try {
       notifications.languageCode = await languageLoader?.call() ?? 'ar';
       final subjects = await examLoader?.call() ?? <StudySubject>[];
-      examCount = subjects.length;
+      examCount = subjects.where((s) => s.exam != null).length;
       await notifications.reconcile(
         repository,
         now(),

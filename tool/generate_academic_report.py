@@ -283,6 +283,10 @@ Spacer(1,10), p("34. Languages and tools", heading),
 p("Dart and Flutter: shared forms, CustomPainter and widget/regression tests. SQLite/sqflite: additive local schema upgrade. pdfrx/PDFium: actual local PDF extraction tests. JavaScript and Node.js: unchanged Cloudflare Worker and regression suite. Python, ReportLab, pypdf and Poppler: report generation and rendered-page review.", cell),
 ]
 
+optional_exam = __import__('json').loads(Path('tool/report_evidence/optional-exam.json').read_text(encoding='utf-8'))
+story += [Spacer(1,9), p("35. Optional examination dates", heading),
+p("17 November 2026. " + optional_exam['summary'] + " SQLite schema 3 makes the exam column nullable using a transactional table reconstruction. IDs, topics, file references, focus history and timer state are retained. Historical-schema migration and reminder-cancellation tests passed. Flutter Analyze is clean; all 208 Flutter tests passed. The signed update was installed on Moto G75 and opened with its saved workspace visible. No test subjects were created in the student workspace.", cell)]
+
 SimpleDocTemplate(str(pending), pagesize=A4, leftMargin=48, rightMargin=48, topMargin=38, bottomMargin=58, title="Growza Development Report",author="Growza Project").build(story,onFirstPage=footer,onLaterPages=footer)
 pdf = PdfReader(pending)
 assert len(pdf.pages) == 10, f"Expected ten pages, found {len(pdf.pages)}"

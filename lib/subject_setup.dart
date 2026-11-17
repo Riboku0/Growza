@@ -93,26 +93,24 @@ class _SubjectSetupState extends State<SubjectSetup> {
   void _save() {
     final subject = widget.subject;
     final valid = _form.currentState!.validate();
-    if (subject == null && _exam == null) {
-      setState(() => _error = tr(context, "اختر موعد الاختبار."));
-      return;
-    }
     if (!valid) return;
     final examTime = _examTime;
     final exam = _exam == null || examTime == null
         ? _exam
         : atTime(_exam!, examTime.hour, examTime.minute);
-    if (subject == null && !exam!.isAfter(widget.now())) {
+    if (subject == null &&
+        exam != null &&
+        !(examTime == null ? dayOffset(exam, 1) : exam).isAfter(widget.now())) {
       setState(
         () => _error = examTime == null
-            ? tr(context, "أضف وقتاً للاختبار الذي سيُعقد اليوم.")
+            ? tr(context, "اختر موعد اختبار قادماً.")
             : tr(context, "اختر وقت اختبار قادماً."),
       );
       return;
     }
     if (_hasPdfTopics) {
       if (!_pdfDraft!.valid || _pickingPdf) return;
-      final base = subject ?? StudySubject(_name.text.trim(), exam!, []);
+      final base = subject ?? StudySubject(_name.text.trim(), exam, []);
       Navigator.pop(context, appendPdfTopics(base, _pdfDraft!));
       return;
     }
@@ -155,7 +153,7 @@ class _SubjectSetupState extends State<SubjectSetup> {
         ),
     ];
     final result = subject == null
-        ? StudySubject(_name.text.trim(), exam!, added, pdfName: _pdfName)
+        ? StudySubject(_name.text.trim(), exam, added, pdfName: _pdfName)
         : subject.withParts([
             for (final p in subject.parts)
               p.id == current?.id ? added.first : p,
@@ -240,6 +238,12 @@ class _SubjectSetupState extends State<SubjectSetup> {
                             return null;
                           },
                         ),
+                        Text(
+                          tr(
+                            context,
+                            'موعد الاختبار اختياري. يمكنك إضافته لاحقاً.',
+                          ),
+                        ),
                         OutlinedButton.icon(
                           onPressed: _pickExam,
                           icon: Icon(Icons.calendar_today_outlined),
@@ -262,6 +266,15 @@ class _SubjectSetupState extends State<SubjectSetup> {
                                   _examTime?.format(context) ??
                                       tr(context, "أضف وقت الاختبار (اختياري)"),
                                 ),
+                              ),
+                              TextButton(
+                                onPressed: () => setState(() {
+                                  _exam = null;
+                                  _examTime = null;
+                                  _edited = true;
+                                  _error = null;
+                                }),
+                                child: Text(tr(context, 'إزالة موعد الاختبار')),
                               ),
                               if (_examTime != null)
                                 TextButton(

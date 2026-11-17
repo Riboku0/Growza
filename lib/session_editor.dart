@@ -109,7 +109,9 @@ class _SessionEditorState extends State<SessionEditor> {
       fixed: widget.session?.fixed ?? false,
     );
     if (widget.task case final task?) {
-      if (session.endWithBreak.isAfter(task.subject.exam) &&
+      final exam = task.subject.exam;
+      if (exam != null &&
+          session.endWithBreak.isAfter(exam) &&
           !session.completed) {
         setState(
           () => _error = tr(context, "يجب أن تنتهي الجلسة قبل موعد الاختبار."),

@@ -2,32 +2,40 @@ import 'package:flutter/material.dart';
 
 import 'study_data.dart';
 
-/// A deterministic suggestion from dates and unfinished topics, never a
-/// guessed difficulty. Manual choice and a running timer take precedence in UI.
+/// Prefer a real upcoming exam; otherwise resume unfinished undated work.
 StudySubject? recommendSubject(
   List<StudySubject> subjects,
   List<String> recent,
   DateTime now,
 ) {
-  final eligible =
+  final upcoming =
       subjects
           .where(
             (s) =>
                 s.nextPart != null &&
-                !DateUtils.dateOnly(s.exam).isBefore(DateUtils.dateOnly(now)),
+                s.exam != null &&
+                !DateUtils.dateOnly(s.exam!).isBefore(DateUtils.dateOnly(now)),
           )
           .toList()
         ..sort((a, b) {
-          final date = a.exam.compareTo(b.exam);
+          final date = compareExamDates(a.exam, b.exam);
           if (date != 0) return date;
-          final leftA = a.parts.length - a.completedCount;
-          final leftB = b.parts.length - b.completedCount;
-          final count = leftB.compareTo(leftA);
+          final count = (b.parts.length - b.completedCount).compareTo(
+            a.parts.length - a.completedCount,
+          );
           return count != 0
               ? count
               : subjects.indexOf(a).compareTo(subjects.indexOf(b));
         });
-  if (eligible.isNotEmpty) return eligible.first;
+  if (upcoming.isNotEmpty) return upcoming.first;
+  final undated = subjects
+      .where((s) => s.exam == null && s.nextPart != null)
+      .toList();
+  for (final name in recent) {
+    final subject = undated.where((s) => s.name == name).firstOrNull;
+    if (subject != null) return subject;
+  }
+  if (undated.isNotEmpty) return undated.first;
   for (final name in recent) {
     final subject = subjects.where((s) => s.name == name).firstOrNull;
     if (subject != null) return subject;

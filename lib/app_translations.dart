@@ -632,4 +632,13 @@ const englishCopy = {
   "اختر PDF لاستخراج مواضيع المذاكرة أو أضفها يدوياً.":
       "Choose a PDF to suggest study topics, or enter them manually.",
   "اختر PDF أثناء إضافة المادة أو الموضوع. يُقرأ الفهرس مباشرة على جهازك، ثم وافق على التحليل وراجع المواضيع قبل حفظها.": "Choose a PDF while adding a subject or topic. Its contents are read on your device immediately. Consent to analysis, then review topics before saving.",
+  "بلا موعد اختبار": "No exam date",
+  "موعد الاختبار اختياري. يمكنك إضافته لاحقاً.":
+      "The exam date is optional. You can add it later.",
+  "إزالة موعد الاختبار": "Remove exam date",
+  "إضافة اختبار": "Add exam",
+  "حُفظت المادة.": "Subject saved.",
+  "حُفظت المادة دون موعد اختبار.": "Subject saved without an exam date.",
+  "أضف موعداً فقط إذا كان لديك اختبار؛ المذاكرة متاحة بدونه.":
+      "Add a date only if you have an exam; you can study without one.",
 };

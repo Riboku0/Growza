@@ -911,14 +911,23 @@ class _StudyHomeState extends State<_StudyHome> {
     if (subject == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(tr(context, "حُفظت المادة وأُضيف الاختبار إلى جدولك.")),
-          action: SnackBarAction(
-            label: tr(context, "عرض الاختبار"),
-            onPressed: () => setState(() {
-              _scheduleDay = DateUtils.dateOnly(result.exam);
-              _tab = 2;
-            }),
+          content: Text(
+            tr(
+              context,
+              result.exam == null
+                  ? "حُفظت المادة."
+                  : "حُفظت المادة وأُضيف الاختبار إلى جدولك.",
+            ),
           ),
+          action: result.exam == null
+              ? null
+              : SnackBarAction(
+                  label: tr(context, "عرض الاختبار"),
+                  onPressed: () => setState(() {
+                    _scheduleDay = DateUtils.dateOnly(result.exam!);
+                    _tab = 2;
+                  }),
+                ),
         ),
       );
     }
@@ -1260,21 +1269,27 @@ class _StudyHomeState extends State<_StudyHome> {
                     children: [
                       copy(subject.name, 17, weight: FontWeight.w700),
                       copy(
-                        tr(context, "{0} · {1} · الاختبار {2}", [
-                          tr(
-                            context,
-                            plantStageLabels[_workspace
-                                .growthFor(subject, _now())
-                                .stage]!,
-                          ),
-                          subject.parts.isEmpty
-                              ? tr(context, "لا توجد مواضيع بعد")
-                              : tr(context, "المواضيع: {0} من {1}", [
-                                  subject.completedCount,
-                                  subject.parts.length,
-                                ]),
-                          examLabel(context, subject.exam),
-                        ]),
+                        tr(
+                          context,
+                          subject.exam == null
+                              ? "{0} · {1}"
+                              : "{0} · {1} · الاختبار {2}",
+                          [
+                            tr(
+                              context,
+                              plantStageLabels[_workspace
+                                  .growthFor(subject, _now())
+                                  .stage]!,
+                            ),
+                            subject.parts.isEmpty
+                                ? tr(context, "لا توجد مواضيع بعد")
+                                : tr(context, "المواضيع: {0} من {1}", [
+                                    subject.completedCount,
+                                    subject.parts.length,
+                                  ]),
+                            examLabel(context, subject.exam),
+                          ],
+                        ),
                         13,
                         color: growzaColor(context, muted),
                       ),
@@ -1285,7 +1300,7 @@ class _StudyHomeState extends State<_StudyHome> {
                   tooltip: tr(context, "خيارات {0}", [subject.name]),
                   onSelected: (action) => switch (action) {
                     _SubjectAction.viewExam => setState(() {
-                      _scheduleDay = DateUtils.dateOnly(subject.exam);
+                      _scheduleDay = DateUtils.dateOnly(subject.exam!);
                       _tab = 2;
                     }),
                     _SubjectAction.reminders => _openCalendars(),
@@ -1295,11 +1310,12 @@ class _StudyHomeState extends State<_StudyHome> {
                     _SubjectAction.delete => _deleteSubject(subject),
                   },
                   itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: _SubjectAction.viewExam,
-                      child: Text(tr(context, "عرض الاختبار")),
-                    ),
-                    if (widget.calendars != null)
+                    if (subject.exam != null)
+                      PopupMenuItem(
+                        value: _SubjectAction.viewExam,
+                        child: Text(tr(context, "عرض الاختبار")),
+                      ),
+                    if (widget.calendars != null && subject.exam != null)
                       PopupMenuItem(
                         value: _SubjectAction.reminders,
                         child: Text(tr(context, "تنبيهات الاختبار")),
@@ -1314,7 +1330,14 @@ class _StudyHomeState extends State<_StudyHome> {
                     ),
                     PopupMenuItem(
                       value: _SubjectAction.exam,
-                      child: Text(tr(context, "تعديل الاختبار")),
+                      child: Text(
+                        tr(
+                          context,
+                          subject.exam == null
+                              ? "إضافة اختبار"
+                              : "تعديل الاختبار",
+                        ),
+                      ),
                     ),
                     PopupMenuItem(
                       value: _SubjectAction.delete,
@@ -1577,13 +1600,14 @@ class _StudyHomeState extends State<_StudyHome> {
   }
 
   Future<void> _editExam(StudySubject subject) async {
-    final date = await Navigator.push<DateTime>(
+    final selection = await Navigator.push<ExamSelection>(
       context,
       GrowzaRoute(
         builder: (context) => ExamEditor(subject: subject, now: _now()),
       ),
     );
-    if (!mounted || date == null) return;
+    if (!mounted || selection == null) return;
+    final date = selection.date;
     setState(() {
       final index = _subjects.indexWhere((s) => s.name == subject.name);
       final current = _subjects[index];
@@ -1595,11 +1619,16 @@ class _StudyHomeState extends State<_StudyHome> {
         pdfName: current.pdfName,
         nextPartId: current.nextPartId,
       );
-      _scheduleDay = DateUtils.dateOnly(date);
+      if (date != null) _scheduleDay = DateUtils.dateOnly(date);
     });
     _save();
     _showMessage(
-      tr(context, "حُدّث الاختبار في جدولك. راجع الخطة إذا تغيّر الموعد."),
+      tr(
+        context,
+        date == null
+            ? "حُفظت المادة دون موعد اختبار."
+            : "حُدّث الاختبار في جدولك. راجع الخطة إذا تغيّر الموعد.",
+      ),
     );
   }
 

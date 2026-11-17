@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-17",
+  "summary": "Examination dates are optional in manual and PDF-assisted subject creation. A date may be added or removed later; date-only exams are allowed today. Undated subjects have no exam countdown, event or reminders and are not automatically harvested. Planning uses the selected study window without inventing a deadline.",
+  "validation": "Flutter Analyze is clean and all 208 Flutter tests passed. Historical SQLite schemas 1 and 2 upgrade to schema 3 with all table rows and foreign keys preserved; the exam column accepts SQL NULL. Removal cancels old reminders. JSON/backup round-trips, manual/PDF creation, recommendations and planning without an exam are covered.",
+  "flutterTests": 208,
+  "sqliteSchema": 3,
+  "phoneInstalled": true,
+  "nativeColdLaunchMs": 1807,
+  "savedWorkspaceVisible": true,
+  "testSubjectsCreatedOnPhone": false,
+  "fullPhysicalUndatedCreationTest": false,
+  "apkSha256": "e56ea7fa86f342b861a08663f61173d991a99c879f92cc6f751cb6eb140d20d3",
+  "apkBytes": 30694356,
+  "gitCommandsExecuted": 0
+}

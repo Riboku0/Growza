@@ -1,6 +1,8 @@
 import 'growth_rules.dart';
 
-import 'package:file_selector/file_selector.dart';
+import 'pdf_topic_import.dart';
+import 'pdf_topics.dart';
+
 import 'package:flutter/material.dart';
 
 import 'study_input.dart';
@@ -17,6 +19,8 @@ class SubjectSetup extends StatefulWidget {
     this.subject,
     this.part,
     this.remainingTime = false,
+    this.pdfPicker,
+    this.topicProvider,
   });
 
   final DateTime Function() now;
@@ -24,6 +28,8 @@ class SubjectSetup extends StatefulWidget {
   final StudySubject? subject;
   final StudyPart? part;
   final bool remainingTime;
+  final StudyPdfPicker? pdfPicker;
+  final TopicProvider? topicProvider;
 
   @override
   State<SubjectSetup> createState() => _SubjectSetupState();
@@ -42,6 +48,8 @@ class _SubjectSetupState extends State<SubjectSetup> {
   String? _pdfName;
   String? _error;
   bool _pickingPdf = false;
+  PdfTopicDraft? _pdfDraft;
+  bool get _hasPdfTopics => _pdfDraft?.hasTopics == true;
   bool _multiple = false;
   bool _edited = false;
 
@@ -82,38 +90,6 @@ class _SubjectSetupState extends State<SubjectSetup> {
     });
   }
 
-  Future<void> _pickPdf() async {
-    setState(() => _pickingPdf = true);
-    try {
-      final pdf = await openFile(
-        acceptedTypeGroups: [
-          XTypeGroup(
-            label: tr(context, "ملفات PDF"),
-            extensions: ['pdf'],
-            mimeTypes: ['application/pdf'],
-            uniformTypeIdentifiers: ['com.adobe.pdf'],
-          ),
-        ],
-      );
-      if (!mounted || pdf == null) return;
-      setState(() {
-        if (pdf.name.toLowerCase().endsWith('.pdf')) {
-          _pdfName = pdf.name;
-          _edited = true;
-          _error = null;
-        } else {
-          _error = tr(context, "اختر ملف PDF.");
-        }
-      });
-    } on Exception {
-      if (mounted) {
-        setState(() => _error = tr(context, "تعذّر اختيار ملف PDF."));
-      }
-    } finally {
-      if (mounted) setState(() => _pickingPdf = false);
-    }
-  }
-
   void _save() {
     final subject = widget.subject;
     final valid = _form.currentState!.validate();
@@ -132,6 +108,12 @@ class _SubjectSetupState extends State<SubjectSetup> {
             ? tr(context, "أضف وقتاً للاختبار الذي سيُعقد اليوم.")
             : tr(context, "اختر وقت اختبار قادماً."),
       );
+      return;
+    }
+    if (_hasPdfTopics) {
+      if (!_pdfDraft!.valid || _pickingPdf) return;
+      final base = subject ?? StudySubject(_name.text.trim(), exam!, []);
+      Navigator.pop(context, appendPdfTopics(base, _pdfDraft!));
       return;
     }
     final current = widget.part;
@@ -169,6 +151,7 @@ class _SubjectSetupState extends State<SubjectSetup> {
           completed: current?.completed ?? false,
           startPage: current?.startPage,
           endPage: current?.endPage,
+          pdfName: _pdfName ?? current?.pdfName,
         ),
     ];
     final result = subject == null
@@ -213,12 +196,12 @@ class _SubjectSetupState extends State<SubjectSetup> {
                     children: [
                       PageHeading(
                         addingSubject
-                            ? tr(context, "ابدأ بموضوع واحد")
+                            ? tr(context, "أضف مادتك ومواضيعها")
                             : subject.name,
                         addingSubject
                             ? tr(
                                 context,
-                                "أضف أول موضوع تريد مذاكرته. يمكنك إضافة المزيد لاحقاً.",
+                                "اختر PDF لاستخراج مواضيع المذاكرة أو أضفها يدوياً.",
                               )
                             : widget.remainingTime
                             ? tr(
@@ -292,126 +275,104 @@ class _SubjectSetupState extends State<SubjectSetup> {
                           ),
                       ],
                       if (widget.part == null)
-                        SegmentedButton<bool>(
-                          segments: [
-                            ButtonSegment(
-                              value: false,
-                              label: Text(tr(context, "موضوع واحد")),
-                            ),
-                            ButtonSegment(
-                              value: true,
-                              label: Text(tr(context, "عدة مواضيع")),
-                            ),
+                        PdfTopicImport(
+                          provider: widget.topicProvider,
+                          pick: widget.pdfPicker,
+                          existingTitles: [
+                            for (final p in subject?.parts ?? <StudyPart>[])
+                              p.title,
                           ],
-                          selected: {_multiple},
-                          onSelectionChanged: (value) =>
-                              setState(() => _multiple = value.first),
-                        ),
-                      TextFormField(
-                        maxLines: _multiple ? 6 : 1,
-                        controller: _title,
-                        keyboardType: _multiple
-                            ? TextInputType.multiline
-                            : TextInputType.text,
-                        readOnly: widget.remainingTime,
-                        textCapitalization: TextCapitalization.sentences,
-                        textInputAction: _multiple
-                            ? TextInputAction.newline
-                            : TextInputAction.next,
-                        decoration: InputDecoration(
-                          labelText: _multiple
-                              ? tr(context, "مواضيع المذاكرة · كل موضوع في سطر")
-                              : addingSubject
-                              ? tr(context, "أول موضوع للمذاكرة")
-                              : tr(context, "موضوع المذاكرة"),
-                          hintText: tr(context, "مثال: حل تمارين التكامل"),
-                        ),
-                        validator: (value) => value!.trim().isEmpty
-                            ? tr(context, "أدخل موضوع المذاكرة.")
-                            : null,
-                      ),
-                      TextFormField(
-                        controller: _minutes,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [studyDigitsFormatter],
-                        decoration: InputDecoration(
-                          labelText: widget.remainingTime
-                              ? tr(context, "الدقائق المتبقية")
-                              : tr(context, "دقائق التركيز المقدّرة"),
-                          helperText: widget.remainingTime
-                              ? null
-                              : _multiple
-                              ? tr(
-                                  context,
-                                  "يُطبّق التقدير على كل موضوع، ويمكنك تعديل كل موضوع لاحقاً.",
-                                )
-                              : tr(
-                                  context,
-                                  "ابدأ بـ25 دقيقة، وعدّلها متى شئت.",
-                                ),
-                        ),
-                        validator: (value) {
-                          final minutes = int.tryParse(value!);
-                          return minutes == null || minutes < 1 || minutes > 720
-                              ? tr(context, "أدخل مدة من 1 إلى 720 دقيقة.")
-                              : null;
-                        },
-                      ),
-                      if (!widget.remainingTime)
-                        CheckboxListTile(
-                          contentPadding: EdgeInsets.zero,
-                          value: _priority,
-                          onChanged: (value) => setState(() {
-                            _priority = value!;
+                          onChanged: (draft) => setState(() {
+                            _pdfDraft = draft;
+                            _pdfName = draft?.fileName;
                             _edited = true;
                           }),
-                          title: Text(tr(context, "اجعل هذا الموضوع أولوية")),
+                          onBusyChanged: (busy) =>
+                              setState(() => _pickingPdf = busy),
                         ),
-                      if (addingSubject)
-                        Panel(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            spacing: 8,
-                            children: [
-                              copy(
-                                tr(context, "مرجع PDF · اختياري"),
-                                14,
-                                weight: FontWeight.w700,
+                      if (!_hasPdfTopics) ...[
+                        if (widget.part == null)
+                          SegmentedButton<bool>(
+                            segments: [
+                              ButtonSegment(
+                                value: false,
+                                label: Text(tr(context, "موضوع واحد")),
                               ),
-                              copy(
-                                _pdfName ??
-                                    tr(
-                                      context,
-                                      "مرجع اختياري باسم الملف فقط. لا يُقرأ محتوى PDF ولا يُحلّل.",
-                                    ),
-                                13,
-                                color: growzaColor(context, muted),
-                              ),
-                              Wrap(
-                                spacing: 6,
-                                children: [
-                                  OutlinedButton.icon(
-                                    onPressed: _pickingPdf ? null : _pickPdf,
-                                    icon: Icon(Icons.picture_as_pdf_outlined),
-                                    label: Text(
-                                      _pdfName == null
-                                          ? tr(context, "اختر ملف PDF")
-                                          : tr(context, "تغيير ملف PDF"),
-                                    ),
-                                  ),
-                                  if (_pdfName != null)
-                                    TextButton(
-                                      onPressed: () => setState(() {
-                                        _pdfName = null;
-                                        _edited = true;
-                                      }),
-                                      child: Text(tr(context, "إزالة")),
-                                    ),
-                                ],
+                              ButtonSegment(
+                                value: true,
+                                label: Text(tr(context, "عدة مواضيع")),
                               ),
                             ],
+                            selected: {_multiple},
+                            onSelectionChanged: (value) =>
+                                setState(() => _multiple = value.first),
                           ),
+                        TextFormField(
+                          maxLines: _multiple ? 6 : 1,
+                          controller: _title,
+                          keyboardType: _multiple
+                              ? TextInputType.multiline
+                              : TextInputType.text,
+                          readOnly: widget.remainingTime,
+                          textCapitalization: TextCapitalization.sentences,
+                          textInputAction: _multiple
+                              ? TextInputAction.newline
+                              : TextInputAction.next,
+                          decoration: InputDecoration(
+                            labelText: _multiple
+                                ? tr(
+                                    context,
+                                    "مواضيع المذاكرة · كل موضوع في سطر",
+                                  )
+                                : addingSubject
+                                ? tr(context, "أول موضوع للمذاكرة")
+                                : tr(context, "موضوع المذاكرة"),
+                            hintText: tr(context, "مثال: حل تمارين التكامل"),
+                          ),
+                          validator: (value) => value!.trim().isEmpty
+                              ? tr(context, "أدخل موضوع المذاكرة.")
+                              : null,
                         ),
+                        TextFormField(
+                          controller: _minutes,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [studyDigitsFormatter],
+                          decoration: InputDecoration(
+                            labelText: widget.remainingTime
+                                ? tr(context, "الدقائق المتبقية")
+                                : tr(context, "دقائق التركيز المقدّرة"),
+                            helperText: widget.remainingTime
+                                ? null
+                                : _multiple
+                                ? tr(
+                                    context,
+                                    "يُطبّق التقدير على كل موضوع، ويمكنك تعديل كل موضوع لاحقاً.",
+                                  )
+                                : tr(
+                                    context,
+                                    "ابدأ بـ25 دقيقة، وعدّلها متى شئت.",
+                                  ),
+                          ),
+                          validator: (value) {
+                            final minutes = int.tryParse(value!);
+                            return minutes == null ||
+                                    minutes < 1 ||
+                                    minutes > 720
+                                ? tr(context, "أدخل مدة من 1 إلى 720 دقيقة.")
+                                : null;
+                          },
+                        ),
+                        if (!widget.remainingTime)
+                          CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _priority,
+                            onChanged: (value) => setState(() {
+                              _priority = value!;
+                              _edited = true;
+                            }),
+                            title: Text(tr(context, "اجعل هذا الموضوع أولوية")),
+                          ),
+                      ],
                       if (_error case final error?)
                         copy(
                           error,
@@ -422,7 +383,9 @@ class _SubjectSetupState extends State<SubjectSetup> {
                         addingSubject
                             ? tr(context, "حفظ المادة")
                             : tr(context, "حفظ الموضوع"),
-                        _pickingPdf ? null : _save,
+                        _pickingPdf || (_hasPdfTopics && !_pdfDraft!.valid)
+                            ? null
+                            : _save,
                       ),
                     ],
                   ),

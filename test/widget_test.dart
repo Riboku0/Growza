@@ -561,29 +561,31 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('A PDF filename is optional and never fills the study parts', (
-    tester,
-  ) async {
-    final originalSelector = FileSelectorPlatform.instance;
-    final selector = _TestFileSelector();
-    FileSelectorPlatform.instance = selector;
-    addTearDown(() => FileSelectorPlatform.instance = originalSelector);
-    await tester.pumpWidget(const GrowzaApp(showWelcome: false));
-    await tapLabel(tester, 'أضف مادتك الأولى');
-    await scrollTo(tester, find.text('اختر ملف PDF'));
-    await tapLabel(tester, 'اختر ملف PDF');
-    expect(selector.requestedTypes!.single.extensions, ['pdf']);
-    selector.selection = XFile('lecture-notes.pdf');
-    await tapLabel(tester, 'اختر ملف PDF');
-    expect(find.text('lecture-notes.pdf'), findsOneWidget);
-    expect(
-      tester
-          .widget<TextFormField>(find.byType(TextFormField).at(1))
-          .controller!
-          .text,
-      isEmpty,
-    );
-  });
+  testWidgets(
+    'Cancelled and invalid PDF selections never manufacture study topics',
+    (tester) async {
+      final originalSelector = FileSelectorPlatform.instance;
+      final selector = _TestFileSelector();
+      FileSelectorPlatform.instance = selector;
+      addTearDown(() => FileSelectorPlatform.instance = originalSelector);
+      await tester.pumpWidget(const GrowzaApp(showWelcome: false));
+      await tapLabel(tester, 'أضف مادتك الأولى');
+      await scrollTo(tester, find.text('اختر ملف PDF'));
+      await tapLabel(tester, 'اختر ملف PDF');
+      expect(selector.requestedTypes!.single.extensions, ['pdf']);
+      selector.selection = XFile('lecture-notes.txt');
+      await tapLabel(tester, 'اختر ملف PDF');
+      expect(find.text('اختر ملف PDF.'), findsOneWidget);
+      expect(find.byKey(const ValueKey('pdf-file-name')), findsNothing);
+      expect(
+        tester
+            .widget<TextFormField>(find.byType(TextFormField).at(1))
+            .controller!
+            .text,
+        isEmpty,
+      );
+    },
+  );
 }
 
 class _MemoryStorage extends StudyStorage {

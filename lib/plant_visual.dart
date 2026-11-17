@@ -328,18 +328,18 @@ class StudyPlantPainter extends CustomPainter {
     this.palette,
     this.flowerCount,
   });
-  final double units;
-  final double flowers;
-  final bool resting;
-  final bool centered;
-  final bool dark;
+  final double units, flowers;
+  final bool resting, centered, dark;
   final PlantPalette? palette;
   final double? flowerCount;
+  PlantPalette get _colors =>
+      palette ??
+      PlantPalette.forBrightness(dark ? Brightness.dark : Brightness.light);
+
   @override
   void paint(Canvas canvas, Size size) {
-    final colors =
-        palette ??
-        PlantPalette.forBrightness(dark ? Brightness.dark : Brightness.light);
+    if (size.isEmpty) return;
+    final colors = _colors;
     final scale = math.min(size.width / 160, size.height / 200);
     canvas.save();
     canvas.translate(
@@ -347,240 +347,400 @@ class StudyPlantPainter extends CustomPainter {
       (size.height - 200 * scale) / 2,
     );
     canvas.scale(scale);
+    final u = units.isFinite ? units.clamp(0.0, 4.0) : 0.0;
+    final height = 128 * math.pow(u / 4, .64).toDouble();
+    final root = Offset(80, centered ? 110 + height * .46 : 174);
+    final tip = Offset(80 + math.sin(u * 1.3) * 3, root.dy - height);
     final p = Paint()..isAntiAlias = true;
-    final u = units.clamp(0.0, 4.0);
-    final height = 126 * math.pow(u / 4, .55).toDouble();
-    final root = Offset(80, centered ? 108 + height / 2 : 174);
-    canvas.drawOval(
-      Rect.fromLTWH(47, root.dy - 4, 66, 12),
-      p..color = colors.soil,
+    // A soft, bounded wash provides depth without expensive blur layers.
+    final halo = Rect.fromCenter(
+      center: Offset(80, root.dy - height * .48 - 6),
+      width: 122,
+      height: math.max(66, height + 40),
     );
     canvas.drawOval(
-      Rect.fromLTWH(61, root.dy - 2, 38, 6),
-      p..color = colors.soilDark,
-    );
-    if (u <= 0) {
-      canvas.save();
-      canvas.translate(80, root.dy - 5);
-      canvas.rotate(-0.35);
-      canvas.drawOval(Rect.fromLTWH(-11, -7, 22, 14), p..color = colors.seed);
-      canvas.drawOval(
-        Rect.fromLTWH(-6, -5, 10, 3),
-        p..color = colors.seedLight,
-      );
-      canvas.restore();
-      final blooms = flowerCount ?? flowers * 5;
-      for (var i = 0; i < blooms.ceil(); i++) {
-        _flower(
-          canvas,
-          p,
-          Offset(95 + math.sin(i * 2.4) * 12, root.dy - 9 - (i % 3) * 5),
-          (blooms - i).clamp(0.0, 1.0) * .65,
-        );
-      }
-      canvas.restore();
-      return;
-    }
-    if (u < .5) {
-      canvas.save();
-      canvas.translate(80, root.dy - 5);
-      canvas.rotate(-.35);
-      canvas.drawOval(
-        Rect.fromLTWH(-11, -7, 22, 14),
-        p..color = colors.seed.withValues(alpha: 1 - u / .5),
-      );
-      canvas.restore();
-    }
-    final top = Offset(81 + 3 * math.sin(u), root.dy - height);
-    final stem = Path()
-      ..moveTo(root.dx, root.dy)
-      ..cubicTo(
-        76,
-        root.dy - height * .32,
-        86,
-        root.dy - height * .65,
-        top.dx,
-        top.dy,
-      );
-    canvas.drawPath(
-      stem,
+      halo,
       p
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4 + u * 1.1
-        ..strokeCap = StrokeCap.round
-        ..color = Color.lerp(
-          colors.stem,
-          colors.trunk,
-          ((u - 1.5) / 1.5).clamp(0.0, 1.0),
-        )!,
+        ..shader = RadialGradient(
+          colors: [
+            colors.halo.withValues(alpha: dark ? .09 : .11),
+            colors.halo.withValues(alpha: 0),
+          ],
+        ).createShader(halo),
     );
-    p.style = PaintingStyle.fill;
-    // A slim highlight makes the trunk legible without adding a hard outline.
+    p.shader = null;
+    canvas.drawOval(
+      Rect.fromCenter(center: root.translate(0, 9), width: 83, height: 12),
+      p..color = colors.soilDark.withValues(alpha: .14),
+    );
+    final mound = Path()
+      ..moveTo(40, root.dy + 1)
+      ..cubicTo(48, root.dy - 7, 65, root.dy - 9, 80, root.dy - 5)
+      ..cubicTo(94, root.dy - 10, 112, root.dy - 5, 122, root.dy + 1)
+      ..cubicTo(115, root.dy + 16, 47, root.dy + 18, 40, root.dy + 1)
+      ..close();
     canvas.drawPath(
-      stem,
+      mound,
       p
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = math.max(.6, u * .35)
-        ..color = colors.trunkLight.withValues(alpha: .65),
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.lerp(colors.soil, colors.highlight, .16)!,
+            colors.soilDark.withValues(alpha: .65),
+          ],
+        ).createShader(Rect.fromLTWH(40, root.dy - 8, 82, 27)),
     );
-    p.style = PaintingStyle.fill;
-    final tips = <Offset>[top];
+    p.shader = null;
+    // Delicate root threads and soil grains make even the seed a small scene.
+    _stroke(
+      canvas,
+      Path()
+        ..moveTo(80, root.dy)
+        ..cubicTo(74, root.dy + 3, 83, root.dy + 7, 77, root.dy + 11),
+      colors.seedLight.withValues(alpha: .7),
+      .65,
+    );
     for (var i = 0; i < 7; i++) {
-      final strength = ((u - .15) * 1.45 - i * .68).clamp(0.0, 1.0);
-      if (strength == 0) continue;
-      final side = i.isEven ? -1.0 : 1.0;
-      final y = root.dy - height * (.25 + i * .09);
-      final base = Offset(79 + math.sin(i * 1.4) * 2, y);
-      final length = (12 + u * 5) * strength;
-      final tip = base.translate(
-        side * length,
-        -(resting ? length * .08 : length * .55),
+      final x = 49.0 + i * 10;
+      final y = root.dy + 4 + math.sin(i * 2.3) * 3;
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(x, y),
+          width: i.isEven ? 2.4 : 1.5,
+          height: 1.1,
+        ),
+        p..color = colors.seed.withValues(alpha: .32),
       );
-      final branching = ((u - 1.5) / .8).clamp(0.0, 1.0);
-      final end = Offset.lerp(base, tip, branching)!;
-      if (branching > 0) {
-        canvas.drawLine(
-          base,
-          end,
-          p
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = (1.3 + u * .45) * branching
-            ..color = colors.trunk,
+    }
+    final seedAlpha = (1 - u / .7).clamp(0.0, 1.0);
+    if (seedAlpha > 0) _seed(canvas, root.translate(0, -3), seedAlpha, u);
+    final flowerTips = <Offset>[];
+    if (u > 0) {
+      final wood = ((u - 1.5) / 2.5).clamp(0.0, 1.0);
+      final stemColor = Color.lerp(colors.stem, colors.trunk, wood)!;
+      final stem = Path()
+        ..moveTo(80, root.dy + 1)
+        ..cubicTo(
+          74,
+          root.dy - height * .22,
+          87,
+          root.dy - height * .64,
+          tip.dx,
+          tip.dy,
         );
-        p.style = PaintingStyle.fill;
+      _stroke(canvas, stem, stemColor, 1.35 + 4.5 * wood);
+      _stroke(
+        canvas,
+        Path()
+          ..moveTo(79.3, root.dy - 1)
+          ..cubicTo(
+            75.4,
+            root.dy - height * .23,
+            85,
+            root.dy - height * .64,
+            tip.dx - .5,
+            tip.dy + 1,
+          ),
+        colors.trunkLight.withValues(alpha: .65),
+        .55 + wood * .7,
+      );
+      // Paired cotyledons unfold first; mature foliage is built from branching twigs.
+      for (var i = 0; i < 8; i++) {
+        final strength = ((u - .10 - i * .31) / .62).clamp(0.0, 1.0);
+        if (strength <= 0) continue;
+        final side = i.isEven ? -1.0 : 1.0;
+        final maturity = ((u - 3) / 1).clamp(0.0, 1.0);
+        final fraction = .29 + i * .084 + maturity * .12 * (1 - i / 8);
+        final origin = Offset(
+          80 + math.sin(i * .9) * 1.8,
+          root.dy - height * fraction,
+        );
+        final crown = (.88 + .12 * math.sin(i * .7));
+        final reach = (12 + u * 5.4) * strength * crown * (1 + maturity * .32);
+        final end = origin.translate(
+          side * reach,
+          -(5 + u * 4.2) * strength * (resting ? .75 : 1),
+        );
+        final branch = Path()
+          ..moveTo(origin.dx, origin.dy)
+          ..quadraticBezierTo(
+            origin.dx + side * reach * .65,
+            origin.dy - 2,
+            end.dx,
+            end.dy,
+          );
+        _stroke(canvas, branch, stemColor, (.65 + wood * 1.35) * strength);
+        final angle = side < 0 ? -2.53 : -.70;
+        final leafSize = (12 + u * 2.6) * strength;
+        _leaf(canvas, end, leafSize, angle + (resting ? side * .18 : 0), i);
+        flowerTips.add(end.translate(side * 6, -6));
+        final fullness = ((u - 1.85 - i * .045) / 1.2).clamp(0.0, 1.0);
+        if (fullness > 0) {
+          final middle = Offset.lerp(origin, end, .63)!;
+          _leaf(
+            canvas,
+            middle,
+            (10 + u * 1.55) * strength * fullness,
+            side < 0 ? -1.83 : -1.35,
+            i + 1,
+          );
+          _leaf(
+            canvas,
+            end.translate(-side * 3, 2),
+            (11 + u * 1.3) * strength * fullness,
+            side < 0 ? 2.78 : .27,
+            i + 2,
+          );
+          if (u > 3.1) {
+            final extra = ((u - 3.1) / .9).clamp(0.0, 1.0);
+            _leaf(
+              canvas,
+              Offset.lerp(origin, end, .38)!,
+              12 * strength * extra,
+              side < 0 ? -2.65 : -.45,
+              i + 3,
+            );
+          }
+        }
       }
-      _leaf(canvas, p, end, side * length * (1 - branching * .25), resting);
-      if (branching > 0) {
+      final bud = (u / .6).clamp(0.0, 1.0);
+      _leaf(canvas, tip.translate(0, 4), (10 + u * 1.8) * bud, -1.86, 1);
+      if (u > 1.2) {
         _leaf(
           canvas,
-          p,
-          end.translate(-side * 5 * branching, branching),
-          -side * 10 * branching,
-          resting,
+          tip.translate(0, 7),
+          (10 + u) * ((u - 1.2) / .7).clamp(0.0, 1.0),
+          -.75,
+          2,
         );
       }
-      tips.add(tip);
+      flowerTips.add(tip.translate(2, -5));
     }
-    if (u > 2) {
-      final canopy = ((u - 2) / 2).clamp(0.0, 1.0);
-      for (var i = 0; i < 9; i++) {
-        final angle = (i / 8) * math.pi * 1.65 + math.pi * .67;
-        final center = top.translate(
-          math.cos(angle) * (17 + canopy * 24),
-          8 + math.sin(angle) * (8 + canopy * 20),
-        );
-        final leaf = Path()
-          ..moveTo(center.dx - 14 * canopy, center.dy + 9 * canopy)
-          ..cubicTo(
-            center.dx - 22 * canopy,
-            center.dy - 8 * canopy,
-            center.dx - 3 * canopy,
-            center.dy - 23 * canopy,
-            center.dx + 13 * canopy,
-            center.dy - 13 * canopy,
-          )
-          ..cubicTo(
-            center.dx + 29 * canopy,
-            center.dy + 2 * canopy,
-            center.dx + 12 * canopy,
-            center.dy + 19 * canopy,
-            center.dx - 14 * canopy,
-            center.dy + 9 * canopy,
-          );
-        canvas.drawPath(
-          leaf,
-          p
-            ..color = [
-              colors.leafDark,
-              colors.leafMid,
-              colors.leafLight,
-            ][i % 3].withValues(alpha: resting ? .74 : 1),
-        );
-        if (i.isEven) tips.add(center);
-      }
+    // Moss is scenery rather than credited growth, with the seed partly buried.
+    for (final item in [
+      (54.0, -1.0, 7.0),
+      (61.0, 1.0, 5.0),
+      (105.0, 1.0, 6.0),
+      (113.0, -1.0, 4.0),
+    ]) {
+      final (x, side, h) = item;
+      _stroke(
+        canvas,
+        Path()
+          ..moveTo(x, root.dy + 1)
+          ..quadraticBezierTo(
+            x + side * 1.8,
+            root.dy - h * .7,
+            x + side * 4,
+            root.dy - h,
+          ),
+        colors.leafMid.withValues(alpha: .72),
+        .8,
+      );
     }
-    _leaf(
-      canvas,
-      p,
-      top.translate(0, 3),
-      (10 + u * 2) * (u / .3).clamp(0.0, 1.0),
-      resting,
+    canvas.drawOval(
+      Rect.fromCenter(center: root.translate(0, 1), width: 13, height: 3.5),
+      p..color = colors.soilDark.withValues(alpha: .7),
     );
-    final blooms = flowerCount ?? flowers * 5;
+    final requested = flowerCount ?? flowers * 5;
+    final blooms = requested.isFinite ? requested.clamp(0.0, 24.0) : 0.0;
+    if (flowerTips.isEmpty) {
+      flowerTips.addAll([
+        root.translate(-17, -9),
+        root.translate(18, -10),
+        root.translate(5, -15),
+      ]);
+    }
     for (var i = 0; i < blooms.ceil(); i++) {
-      final visible = (blooms - i).clamp(0.0, 1.0);
-      final target = tips[(i * 2) % tips.length];
-      final ring = i ~/ tips.length;
+      final pos = flowerTips[(i + flowerTips.length ~/ 2) % flowerTips.length];
+      final ring = i ~/ flowerTips.length;
+      final center = pos.translate(math.sin(i * 2.4) * ring * 5, -ring * 3.5);
+      if (u == 0) {
+        _stroke(
+          canvas,
+          Path()
+            ..moveTo(center.dx, root.dy)
+            ..quadraticBezierTo(
+              center.dx + 2,
+              center.dy + 3,
+              center.dx,
+              center.dy,
+            ),
+          colors.stem,
+          .75,
+        );
+      }
       _flower(
         canvas,
-        p,
-        target.translate(math.sin(i * 2.4) * ring * 4, -3 - ring * 3),
-        visible *
-            (.72 + .28 * (u / 4)) *
-            (blooms > 12 ? math.sqrt(12 / blooms).clamp(.25, 1) : 1),
+        center,
+        (blooms - i).clamp(0.0, 1.0) * (u == 0 ? .62 : .72 + u * .065),
       );
     }
     canvas.restore();
   }
 
-  void _leaf(Canvas canvas, Paint p, Offset base, double length, bool droop) {
-    final colors =
-        palette ??
-        PlantPalette.forBrightness(dark ? Brightness.dark : Brightness.light);
-    final tip = base.translate(length, -length.abs() * (droop ? .12 : .62));
-    final path = Path()
-      ..moveTo(base.dx, base.dy)
-      ..quadraticBezierTo(
-        base.dx + length * .15,
-        tip.dy - length.abs() * .5,
-        tip.dx,
-        tip.dy,
-      )
-      ..quadraticBezierTo(
-        base.dx + length * .8,
-        base.dy + length.abs() * .3,
-        base.dx,
-        base.dy,
-      );
+  void _stroke(Canvas canvas, Path path, Color color, double width) {
     canvas.drawPath(
       path,
-      p
-        ..style = PaintingStyle.fill
-        ..color = colors.leafMid.withValues(alpha: droop ? .72 : 1),
-    );
-    canvas.drawLine(
-      base,
-      tip,
-      p
+      Paint()
+        ..isAntiAlias = true
         ..style = PaintingStyle.stroke
-        ..strokeWidth = .7
-        ..color = colors.vein,
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..strokeWidth = width
+        ..color = color,
     );
-    p.style = PaintingStyle.fill;
   }
 
-  void _flower(Canvas canvas, Paint p, Offset center, double scale) {
-    final colors =
-        palette ??
-        PlantPalette.forBrightness(dark ? Brightness.dark : Brightness.light);
+  void _seed(Canvas canvas, Offset center, double alpha, double growth) {
+    final c = _colors;
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(-.36);
+    final seed = Path()
+      ..moveTo(0, -9)
+      ..cubicTo(6.2, -4.5, 6.2, 2, 0, 5)
+      ..cubicTo(-5.7, 2, -5.7, -3.5, 0, -9)
+      ..close();
+    canvas.drawPath(
+      seed,
+      Paint()
+        ..isAntiAlias = true
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            c.seedLight.withValues(alpha: alpha),
+            c.seed.withValues(alpha: alpha),
+          ],
+        ).createShader(const Rect.fromLTWH(-5, -9, 11, 14)),
+    );
+    _stroke(
+      canvas,
+      Path()
+        ..moveTo(0, -7)
+        ..quadraticBezierTo(-1.8, -1, .4, 4),
+      c.seed.withValues(alpha: alpha * .7),
+      .6,
+    );
+    _stroke(
+      canvas,
+      Path()
+        ..moveTo(-2, -5)
+        ..quadraticBezierTo(-3.2, -2.2, -2.3, .3),
+      c.highlight.withValues(alpha: alpha * .55),
+      .65,
+    );
+    canvas.restore();
+  }
+
+  void _leaf(
+    Canvas canvas,
+    Offset base,
+    double length,
+    double angle,
+    int tone,
+  ) {
+    if (length < .1) return;
+    final c = _colors;
+    final shade = [c.leafDark, c.leafMid, c.leafLight][tone % 3];
+    canvas.save();
+    canvas.translate(base.dx, base.dy);
+    canvas.rotate(angle);
+    final leaf = Path()
+      ..moveTo(0, 0)
+      ..cubicTo(
+        length * .24,
+        -length * .43,
+        length * .7,
+        -length * .31,
+        length,
+        0,
+      )
+      ..cubicTo(length * .64, length * .38, length * .25, length * .27, 0, 0)
+      ..close();
+    final bounds = Rect.fromLTWH(0, -length * .43, length, length * .81);
+    canvas.drawPath(
+      leaf,
+      Paint()
+        ..isAntiAlias = true
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color.lerp(shade, c.leafLight, .38)!,
+            shade,
+            Color.lerp(shade, c.leafDark, .28)!,
+          ],
+        ).createShader(bounds),
+    );
+    _stroke(
+      canvas,
+      Path()
+        ..moveTo(length * .08, 0)
+        ..quadraticBezierTo(length * .48, -length * .035, length * .92, 0),
+      c.vein.withValues(alpha: .58),
+      .42,
+    );
+    if (length > 17) {
+      for (final f in [.34, .56]) {
+        _stroke(
+          canvas,
+          Path()
+            ..moveTo(length * f, -.2)
+            ..lineTo(length * (f + .13), -length * .13),
+          c.vein.withValues(alpha: .28),
+          .32,
+        );
+      }
+    }
+    if (tone == 1 && length > 15) {
+      canvas.drawCircle(
+        Offset(length * .62, -length * .11),
+        .95,
+        Paint()..color = c.highlight.withValues(alpha: .8),
+      );
+    }
+    canvas.restore();
+  }
+
+  void _flower(Canvas canvas, Offset center, double scale) {
+    if (scale <= 0) return;
+    final c = _colors;
     canvas.save();
     canvas.translate(center.dx, center.dy);
     canvas.scale(scale);
     for (var i = 0; i < 5; i++) {
-      final angle = i * math.pi * 2 / 5;
-      canvas.drawOval(
-        Rect.fromCenter(
-          center: Offset(math.cos(angle) * 5, math.sin(angle) * 5),
-          width: 8,
-          height: 9,
-        ),
-        p
-          ..style = PaintingStyle.fill
-          ..color = colors.petal,
+      canvas.save();
+      canvas.rotate(i * math.pi * 2 / 5 - .25);
+      final petal = Path()
+        ..moveTo(0, 1)
+        ..cubicTo(-5.2, -1, -5, -8.8, 0, -9.8)
+        ..cubicTo(5, -8.8, 5.2, -1, 0, 1)
+        ..close();
+      canvas.drawPath(
+        petal,
+        Paint()
+          ..isAntiAlias = true
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [c.highlight, c.petal],
+          ).createShader(const Rect.fromLTWH(-5, -10, 10, 12)),
+      );
+      canvas.restore();
+    }
+    canvas.drawCircle(Offset.zero, 3, Paint()..color = c.pollen);
+    canvas.drawCircle(const Offset(-.7, -.8), .8, Paint()..color = c.highlight);
+    for (var i = 0; i < 4; i++) {
+      final a = i * math.pi / 2;
+      canvas.drawCircle(
+        Offset(math.cos(a) * 1.65, math.sin(a) * 1.65),
+        .3,
+        Paint()..color = c.seed.withValues(alpha: .6),
       );
     }
-    canvas.drawCircle(Offset.zero, 3.8, p..color = colors.pollen);
-    canvas.drawCircle(Offset(-.7, -.8), 1.1, p..color = colors.highlight);
     canvas.restore();
   }
 

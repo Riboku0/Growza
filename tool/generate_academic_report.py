@@ -263,9 +263,29 @@ p("Schedule + now offers a manual study session or an optional external calendar
 Spacer(1,5), p(schedule_plus['validation'] + " The revised calendar-flow test verifies preview before connection; a new test covers dismissal and manual entry. The debug APK was installed and launched on Moto G75. Study/account SQLite and secure-storage files were preserved across installation. Files: main.dart, schedule_view.dart, app_translations.dart and four existing widget-test files. Dart/Flutter, flutter_test, Android/ADB and the existing PDF reporting tools. A real university feed was not supplied.", cell),
 ]
 
+# Current revision evidence is retained with the authoring tool for reproducibility.
+revision = __import__('json').loads(Path('tool/report_evidence/pdf-creation-pass.json').read_text(encoding='utf-8'))
+story += [
+PageBreak(), p("Direct PDF Import and Botanical Revision", title),
+p("17 November 2026 | Interface reliability and local persistence", sub), Spacer(1,12),
+p("30. Integrated creation flow", heading),
+p("New-subject and add-topic forms now share an inline PDF importer. Selecting a file immediately reads its bookmarks or page headings locally. The extracted text appears in a consent dialog; only approval starts the existing Cloudflare AI request. Suggestions remain editable and are persisted only when the student saves the form. Manual entry remains available after cancellation or failure. This remains bounded heading analysis, not full-document comprehension or OCR."),
+Spacer(1,10), p("31. Data integrity and error handling", heading),
+p("The importer prevents concurrent selection/save actions, ignores late results after disposal, exposes unavailable/network states and clears stale suggestions when the selected document changes. Topic names are deduplicated against current work using normalized whitespace and case. Existing completion states and monotonically increasing topic IDs remain intact."),
+Spacer(1,6), p("SQLite schema version 2 adds a nullable PDF filename to each topic, alongside its existing page range. The transactional upgrade links historical page ranges to their original subject PDF. Adding another chapter PDF therefore retains earlier document references. Backup serialization preserves this optional metadata; no PDF bytes, account records or focus-growth rules were changed."),
+Spacer(1,10), p("32. Illustration and motion", heading),
+p("The shared CustomPainter now draws a small tapered seed at the soil surface, unfolding leaves, curved branches, a broader mature crown, leaf veins, restrained gradients, moss and ivory flowers. The approved flat forest is retained. All five stages use the same renderer on Home, the timer, thumbnails and the garden. Existing reduced-motion, hidden-route and lifecycle suspension behavior remains. Rendered blossoms are bounded for predictable drawing cost; actual completion counts remain unchanged."),
+Spacer(1,10), p("33. Verification and limits", heading),
+p(revision['validation']), Spacer(1,6),
+p("Real synthetic PDFs exercise bookmark extraction, page-heading fallback and a drawing-only document with no readable text. UI tests cover consent denial, retries, PDF replacement, duplicate-title rejection, suggestion editing/removal, Arabic page digits, late results and enlarged bilingual layouts. An SQLite version-1 fixture validates upgrade integrity, original IDs, completed work, sessions, focus spans and timer metadata."),
+Spacer(1,6), p(revision['delivery']),
+Spacer(1,10), p("34. Languages and tools", heading),
+p("Dart and Flutter: shared forms, CustomPainter and widget/regression tests. SQLite/sqflite: additive local schema upgrade. pdfrx/PDFium: actual local PDF extraction tests. JavaScript and Node.js: unchanged Cloudflare Worker and regression suite. Python, ReportLab, pypdf and Poppler: report generation and rendered-page review.", cell),
+]
+
 SimpleDocTemplate(str(pending), pagesize=A4, leftMargin=48, rightMargin=48, topMargin=38, bottomMargin=58, title="Growza Development Report",author="Growza Project").build(story,onFirstPage=footer,onLaterPages=footer)
 pdf = PdfReader(pending)
-assert len(pdf.pages) == 9, f"Expected nine pages, found {len(pdf.pages)}"
+assert len(pdf.pages) == 10, f"Expected ten pages, found {len(pdf.pages)}"
 pending.replace(output)
-print("Updated nine-page academic PDF with live AI evaluation.")
+print("Updated ten-page academic PDF with the direct PDF and botanical revision.")
 

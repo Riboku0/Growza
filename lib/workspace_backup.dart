@@ -63,6 +63,9 @@ class WorkspaceBackup {
                   p['endPage'] < p['startPage'])) {
             throw const FormatException();
           }
+          if (p['pdfName'] != null && p['pdfName'] is! String) {
+            throw const FormatException();
+          }
           if (p['id'] is! int ||
               p['id'] <= 0 ||
               !parts.add(p['id']) ||

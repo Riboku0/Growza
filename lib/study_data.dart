@@ -50,7 +50,17 @@ class StudySubject {
   factory StudySubject.fromJson(Map<String, dynamic> json) => StudySubject(
     json['name'] as String,
     DateTime.parse(json['exam'] as String),
-    (json['parts'] as List).map((part) => StudyPart.fromJson(part)).toList(),
+    (json['parts'] as List)
+        .map(
+          (part) => StudyPart.fromJson({
+            ...Map<String, dynamic>.from(part as Map),
+            if (part['pdfName'] == null &&
+                part['startPage'] != null &&
+                json['pdfName'] != null)
+              'pdfName': json['pdfName'],
+          }),
+        )
+        .toList(),
     pdfName: json['pdfName'] as String?,
     id: json['id'] as String?,
     nextPartId: json['nextPartId'] as int?,
@@ -66,6 +76,7 @@ class StudyPart {
     this.completed = false,
     this.startPage,
     this.endPage,
+    this.pdfName,
   });
 
   final int id;
@@ -74,6 +85,18 @@ class StudyPart {
   final bool priority;
   final bool completed;
   final int? startPage, endPage;
+  final String? pdfName;
+
+  StudyPart withPdfReference(String? name) => StudyPart(
+    id,
+    title,
+    minutes,
+    priority: priority,
+    completed: completed,
+    startPage: startPage,
+    endPage: endPage,
+    pdfName: name,
+  );
 
   StudyPart markComplete() => StudyPart(
     id,
@@ -83,6 +106,7 @@ class StudyPart {
     completed: true,
     startPage: startPage,
     endPage: endPage,
+    pdfName: pdfName,
   );
 
   Map<String, Object> toJson() => {
@@ -93,6 +117,7 @@ class StudyPart {
     'completed': completed,
     'startPage': ?startPage,
     'endPage': ?endPage,
+    'pdfName': ?pdfName,
   };
 
   factory StudyPart.fromJson(Map<String, dynamic> json) => StudyPart(
@@ -103,6 +128,7 @@ class StudyPart {
     completed: json['completed'] as bool,
     startPage: json['startPage'] as int?,
     endPage: json['endPage'] as int?,
+    pdfName: json['pdfName'] as String?,
   );
 }
 

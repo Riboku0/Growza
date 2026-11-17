@@ -202,4 +202,39 @@ void main() {
       }
     },
   );
+
+  test('Version 1 migration preserves all rows and links old page ranges to their original PDF', () async {
+    final folder = await Directory.systemTemp.createTemp('growza-upgrade-test');
+    addTearDown(() => folder.delete(recursive: true));
+    final path = '${folder.path}/study.db';
+    var store = StudyDatabase(factory: databaseFactoryFfi, path: path);
+    addTearDown(() => store.close());
+    final data = jsonDecode(fixture()) as Map<String, dynamic>;
+    data['subjects'][0]['pdfName'] = 'legacy.pdf';
+    await store.write(jsonEncode(data));
+    final oldDb = await store.database;
+    await oldDb.execute('ALTER TABLE topics DROP COLUMN pdf_name');
+    await oldDb.execute('PRAGMA user_version = 1');
+    await store.close();
+    store = StudyDatabase(factory: databaseFactoryFfi, path: path);
+    final restored = jsonDecode(
+      await store.readOrMigrate(
+        readLegacy: () async => null,
+        normalize: normalize,
+      ),
+    );
+    expect(restored['subjects'][0]['parts'][0]['id'], 7);
+    expect(restored['subjects'][0]['parts'][0]['completed'], isTrue);
+    expect(restored['subjects'][0]['parts'][0]['pdfName'], 'legacy.pdf');
+    expect(restored['growth']['records'], data['growth']['records']);
+    expect(restored['sessions'], data['sessions']);
+    expect(restored['activeTimer'], data['activeTimer']);
+    expect(
+      (await (await store.database).rawQuery('PRAGMA integrity_check'))
+          .single
+          .values
+          .single,
+      'ok',
+    );
+  });
 }

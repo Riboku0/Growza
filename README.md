@@ -65,3 +65,19 @@ The same Worker handler, with isolated in-memory quotas and real inference, proc
 `chat_template_kwargs.enable_thinking=false` avoids unnecessary reasoning for extraction. Existing quotas, parsing, consent and manual alternatives remain. The provider Free allocation is 10,000 Neurons/day (UTC), and no paid overages were enabled. A separate verification installation consumed one counted production call (959 ms); no phone installation attempt or student data was used. No quotas were waived.
 
 Validation: clean Analyze, 181 Flutter tests, 28 Worker tests, dry-run and actual HTTPS AI response passed. An initial transient local workerd fetch failure passed both isolated and full-suite rechecks without changing runtime code. Only Worker request parameters/configuration and its existing parameter assertion changed. Academic report now includes the live activation measurements. SQLite, accounts, growth and synchronization are unchanged.
+
+## Direct PDF creation and botanical revision - 17 November 2026
+
+Choose a PDF directly while adding a subject or a topic. Local contents extraction opens the consent preview immediately; agreeing requests AI suggestions in the same form. Review/edit before Save. Cancellation, unavailable service and errors keep manual entry available. Duplicate titles are skipped, and each imported topic keeps its own PDF filename/page range. SQLite schema v2 preserves existing IDs, completion, focus history and timer state.
+
+All five plant stages now share the botanical renderer with tapered seeds, soil/moss, curved branches, veined leaves and ivory blossoms. The approved flat forest and motion/reduced-motion rules remain.
+
+Validation: Analyze clean; 200 Flutter tests and 28 Worker tests passed; npm reported zero known vulnerabilities among 38 audited packages. The ARM64-targeted Release APK is at `output/android/Growza-Android.apk`; the original application ID and signing certificate are retained. Worker health is ready with AI active; no live inference or deployment was performed in this revision. Phone installation, cold icon launch, touch, screen recording and physical performance remain pending.
+
+Build the release with normal platform-tooling regeneration (omit `--no-pub` when switching between debug, integration and release builds):
+
+```powershell
+flutter build apk --release --target-platform android-arm64 --dart-define-from-file=config/services.json
+```
+
+The current SDK filters development-only plug-ins in Release. Reusing stale generated registration can incorrectly reference `integration_test`. No dependency or Flutter SDK upgrade was required. Forward-compatibility warnings from `workmanager_android` remain a future SDK-migration consideration.

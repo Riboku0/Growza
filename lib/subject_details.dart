@@ -1,4 +1,6 @@
-import 'package:file_selector/file_selector.dart';
+import 'pdf_topic_import.dart';
+import 'pdf_topics.dart';
+
 import 'package:flutter/material.dart';
 
 import 'form_guard.dart';
@@ -10,9 +12,13 @@ class SubjectDetails extends StatefulWidget {
     super.key,
     required this.subject,
     required this.existingNames,
+    this.pdfPicker,
+    this.topicProvider,
   });
   final StudySubject subject;
   final List<String> existingNames;
+  final StudyPdfPicker? pdfPicker;
+  final TopicProvider? topicProvider;
   @override
   State<SubjectDetails> createState() => _SubjectDetailsState();
 }
@@ -22,47 +28,15 @@ class _SubjectDetailsState extends State<SubjectDetails> {
   late final _name = TextEditingController(text: widget.subject.name);
   late String? _pdf = widget.subject.pdfName;
   bool _picking = false;
-  String? _error;
+  PdfTopicDraft? _draft;
   bool get _dirty =>
       _name.text.trim() != widget.subject.name ||
-      _pdf != widget.subject.pdfName;
+      _pdf != widget.subject.pdfName ||
+      _draft?.hasTopics == true;
   @override
   void dispose() {
     _name.dispose();
     super.dispose();
-  }
-
-  Future<void> _choosePdf() async {
-    setState(() => _picking = true);
-    try {
-      final file = await openFile(
-        acceptedTypeGroups: [
-          XTypeGroup(
-            label: tr(context, "ملفات PDF"),
-            extensions: ['pdf'],
-            mimeTypes: ['application/pdf'],
-            uniformTypeIdentifiers: ['com.adobe.pdf'],
-          ),
-        ],
-      );
-      if (!mounted || file == null) return;
-      setState(() {
-        if (file.name.toLowerCase().endsWith('.pdf')) {
-          _pdf = file.name;
-          _error = null;
-        } else {
-          _error = tr(context, "اختر ملف PDF.");
-        }
-      });
-    } on Exception {
-      if (mounted) {
-        setState(
-          () => _error = tr(context, "تعذّر اختيار ملف PDF. حاول مجدداً."),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _picking = false);
-    }
   }
 
   @override
@@ -116,55 +90,42 @@ class _SubjectDetailsState extends State<SubjectDetails> {
                         return null;
                       },
                     ),
-                    copy(tr(context, "مرجع PDF"), 16, weight: FontWeight.w600),
-                    Text(
-                      tr(
-                        context,
-                        "مرجع اختياري باسم الملف فقط؛ لا يُحلّل محتواه ولا ينشئ مواضيع مذاكرة.",
-                      ),
+                    PdfTopicImport(
+                      pdfName: widget.subject.pdfName,
+                      provider: widget.topicProvider,
+                      pick: widget.pdfPicker,
+                      existingTitles: widget.subject.parts
+                          .map((p) => p.title)
+                          .toList(),
+                      onChanged: (draft) => setState(() {
+                        _draft = draft;
+                        _pdf = draft?.fileName;
+                      }),
+                      onBusyChanged: (busy) => setState(() => _picking = busy),
                     ),
-                    if (_pdf != null) Text(_pdf!),
-                    OutlinedButton.icon(
-                      onPressed: _picking ? null : _choosePdf,
-                      icon: Icon(Icons.attach_file_rounded),
-                      label: Text(
-                        _picking
-                            ? tr(context, "جارٍ اختيار الملف…")
-                            : _pdf == null
-                            ? tr(context, "اختر ملف PDF")
-                            : tr(context, "استبدال ملف PDF"),
-                      ),
-                    ),
-                    if (_pdf != null)
-                      TextButton(
-                        onPressed: _picking
-                            ? null
-                            : () => setState(() => _pdf = null),
-                        child: Text(tr(context, "إزالة مرجع PDF")),
-                      ),
-                    if (_error != null)
-                      Text(
-                        translatedMessage(context, _error!),
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                      ),
                     StudyButton(
                       tr(context, "حفظ تفاصيل المادة"),
-                      _picking
+                      _picking || (_draft?.valid == false)
                           ? null
                           : () {
                               if (!_form.currentState!.validate()) return;
+                              final edited = StudySubject(
+                                _name.text.trim(),
+                                widget.subject.exam,
+                                widget.subject.parts,
+                                id: widget.subject.id,
+                                pdfName: _pdf,
+                                nextPartId: widget.subject.nextPartId,
+                              );
                               Navigator.pop(
                                 context,
-                                StudySubject(
-                                  _name.text.trim(),
-                                  widget.subject.exam,
-                                  widget.subject.parts,
-                                  id: widget.subject.id,
-                                  pdfName: _pdf,
-                                  nextPartId: widget.subject.nextPartId,
-                                ),
+                                _draft?.hasTopics == true
+                                    ? appendPdfTopics(
+                                        edited,
+                                        _draft!,
+                                        updateReference: true,
+                                      )
+                                    : edited,
                               );
                             },
                     ),

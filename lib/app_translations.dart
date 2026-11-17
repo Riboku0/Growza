@@ -620,4 +620,16 @@ const englishCopy = {
   "الحساب المحلي لا ينشئ مساحة مواد منفصلة. متابعة دون حساب تعرض بيانات الدراسة نفسها على هذا الجهاز.": "A local account does not create a separate subject workspace. Continuing without an account shows the same study data on this device.",
   "هذا البريد مسجّل بالفعل. سجّل الدخول به.":
       "This email is already registered. Sign in instead.",
+  "مواضيع من PDF · اختياري": "Topics from PDF · optional",
+  "اختر ملف المادة أو الشابتر؛ نقرأ الفهرس هنا ثم نقترح مواضيع بعد موافقتك. راجعها قبل الحفظ.": "Choose a subject or chapter PDF. We read its contents here, then suggest topics after your consent. Review them before saving.",
+  "جارٍ اقتراح المواضيع…": "Suggesting topics…",
+  "جارٍ قراءة الملف…": "Reading PDF…",
+  "تحليل الملف بالذكاء الاصطناعي": "Analyze PDF with AI",
+  "تجاوزنا {0} مواضيع مكررة.": "Skipped {0} duplicate topics.",
+  "مواضيع هذا الملف موجودة بالفعل. لم تُضف نسخ مكررة.":
+      "These topics already exist. No duplicates were added.",
+  "أضف مادتك ومواضيعها": "Add your subject and topics",
+  "اختر PDF لاستخراج مواضيع المذاكرة أو أضفها يدوياً.":
+      "Choose a PDF to suggest study topics, or enter them manually.",
+  "اختر PDF أثناء إضافة المادة أو الموضوع. يُقرأ الفهرس مباشرة على جهازك، ثم وافق على التحليل وراجع المواضيع قبل حفظها.": "Choose a PDF while adding a subject or topic. Its contents are read on your device immediately. Consent to analysis, then review topics before saving.",
 };

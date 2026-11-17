@@ -382,7 +382,7 @@ void main() {
     expect(find.byKey(const ValueKey('ai-unavailable')), findsOneWidget);
     expect(
       find.text(
-        'No file or text has been sent. You will be asked before using the service.',
+        'Choose a subject or chapter PDF. We read its contents here, then suggest topics after your consent. Review them before saving.',
       ),
       findsOneWidget,
     );

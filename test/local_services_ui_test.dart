@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:growza/ai_topics_screen.dart';
 import 'package:growza/pdf_topics.dart';
+import 'package:growza/pdf_topic_import.dart';
 import 'package:growza/study_ui.dart';
 import 'package:growza/backup_screen.dart';
 import 'package:growza/study_storage.dart';
@@ -51,24 +52,22 @@ void main() {
     'PDF sends only after consent; suggestions remain unsaved until explicit confirmation',
     (t) async {
       final provider = FakeTopics();
-      List<SuggestedTopic>? result;
+      PdfTopicDraft? result;
       await t.pumpWidget(
         host(
           Builder(
             builder: (context) => Scaffold(
               body: TextButton(
                 onPressed: () async {
-                  result = await Navigator.of(context)
-                      .push<List<SuggestedTopic>>(
-                        GrowzaRoute(
-                          builder: (_) => AiTopicsScreen(
-                            subject: 'Biology',
-                            provider: provider,
-                            pick: () async =>
-                                const PdfHeadings('[1] Cells', 10),
-                          ),
-                        ),
-                      );
+                  result = await Navigator.of(context).push<PdfTopicDraft>(
+                    GrowzaRoute(
+                      builder: (_) => AiTopicsScreen(
+                        subject: 'Biology',
+                        provider: provider,
+                        pick: () async => const PdfHeadings('[1] Cells', 10),
+                      ),
+                    ),
+                  );
                 },
                 child: const Text('Open'),
               ),
@@ -80,8 +79,7 @@ void main() {
       await t.pumpAndSettle();
       await tap(t, find.byKey(const ValueKey('ai-pick')));
       expect(provider.calls, 0);
-      await tap(t, find.byKey(const ValueKey('ai-send')));
-      expect(provider.calls, 0);
+      expect(find.byKey(const ValueKey('pdf-consent-preview')), findsOneWidget);
       await t.tap(find.text('إلغاء'));
       await t.pumpAndSettle();
       expect(provider.calls, 0);
@@ -92,7 +90,7 @@ void main() {
       expect(result, isNull);
       expect(find.text('Cells'), findsOneWidget);
       await tap(t, find.byKey(const ValueKey('ai-confirm')));
-      expect(result!.single.minutes, 12);
+      expect(result!.topics.single.minutes, 12);
       expect(t.takeException(), isNull);
     },
   );

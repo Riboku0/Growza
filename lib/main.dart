@@ -8,6 +8,7 @@ import 'growth_rules.dart';
 import 'app_preferences.dart';
 import 'study_recommendation.dart';
 import 'ai_topics_screen.dart';
+import 'pdf_topic_import.dart';
 
 import 'dart:async';
 
@@ -226,24 +227,14 @@ class _StudyHomeState extends State<_StudyHome> {
       context,
       subject: subject.name,
       pdfName: subject.pdfName,
+      existingTitles: subject.parts.map((p) => p.title).toList(),
     );
-    if (!mounted || topics == null || topics.isEmpty) return;
+    if (!mounted || topics == null || !topics.hasTopics) return;
     final index = _workspace.subjects.indexWhere((s) => s.id == subject.id);
     if (index < 0) return;
     final current = _workspace.subjects[index];
-    var next = current.nextPartId;
     setState(
-      () => _workspace.subjects[index] = current.withParts([
-        ...current.parts,
-        for (final topic in topics)
-          StudyPart(
-            next++,
-            topic.title,
-            topic.minutes,
-            startPage: topic.startPage,
-            endPage: topic.endPage,
-          ),
-      ]),
+      () => _workspace.subjects[index] = appendPdfTopics(current, topics),
     );
     _save();
   }
@@ -1365,6 +1356,13 @@ class _StudyHomeState extends State<_StudyHome> {
                       spacing: 3,
                       children: [
                         copy(part.title, 14, weight: FontWeight.w600),
+                        if (part.pdfName != null)
+                          Text(
+                            part.pdfName!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         if (part.startPage != null && part.endPage != null)
                           Text(
                             tr(context, 'صفحات {0}–{1}', [
@@ -1570,6 +1568,7 @@ class _StudyHomeState extends State<_StudyHome> {
                   priority: p.priority,
                   startPage: p.startPage,
                   endPage: p.endPage,
+                  pdfName: p.pdfName,
                 )
               : p,
       ]);

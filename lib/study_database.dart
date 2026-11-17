@@ -18,7 +18,15 @@ class StudyDatabase {
   Future<Database> _open() => _factory.openDatabase(
     path,
     options: OpenDatabaseOptions(
-      version: 1,
+      version: 2,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE topics ADD COLUMN pdf_name TEXT');
+          await db.execute(
+            'UPDATE topics SET pdf_name = (SELECT pdf_name FROM subjects WHERE subjects.id = topics.subject_id) WHERE start_page IS NOT NULL',
+          );
+        }
+      },
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
         await db.execute('PRAGMA busy_timeout = 10000');
@@ -27,7 +35,7 @@ class StudyDatabase {
         for (final sql in [
           'CREATE TABLE workspace_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
           'CREATE TABLE subjects (id TEXT PRIMARY KEY, position INTEGER NOT NULL, name TEXT NOT NULL, exam TEXT NOT NULL, pdf_name TEXT, next_part_id INTEGER NOT NULL)',
-          'CREATE TABLE topics (subject_id TEXT NOT NULL REFERENCES subjects(id) ON DELETE CASCADE, id INTEGER NOT NULL, position INTEGER NOT NULL, title TEXT NOT NULL, minutes INTEGER NOT NULL, priority INTEGER NOT NULL, completed INTEGER NOT NULL, start_page INTEGER, end_page INTEGER, PRIMARY KEY(subject_id,id))',
+          'CREATE TABLE topics (subject_id TEXT NOT NULL REFERENCES subjects(id) ON DELETE CASCADE, id INTEGER NOT NULL, position INTEGER NOT NULL, title TEXT NOT NULL, minutes INTEGER NOT NULL, priority INTEGER NOT NULL, completed INTEGER NOT NULL, start_page INTEGER, end_page INTEGER, pdf_name TEXT, PRIMARY KEY(subject_id,id))',
           'CREATE TABLE study_sessions (position INTEGER PRIMARY KEY, subject TEXT NOT NULL, topic TEXT NOT NULL, start TEXT NOT NULL, minutes INTEGER NOT NULL, part_id INTEGER, completed INTEGER NOT NULL, fixed INTEGER NOT NULL)',
           // No subject foreign key: deleted-subject focus history must survive.
           'CREATE TABLE focus_sessions (id TEXT PRIMARY KEY, subject_id TEXT, position INTEGER NOT NULL, planned_ms INTEGER NOT NULL, ended_at TEXT NOT NULL, completed INTEGER NOT NULL, legacy INTEGER NOT NULL, quality TEXT NOT NULL)',
@@ -103,6 +111,8 @@ class StudyDatabase {
           'completed': p['completed'] == true ? 1 : 0,
           'start_page': p['startPage'],
           'end_page': p['endPage'],
+          'pdf_name':
+              p['pdfName'] ?? (p['startPage'] != null ? s['pdfName'] : null),
         });
       }
     }
@@ -182,6 +192,7 @@ class StudyDatabase {
                 'completed': p['completed'] == 1,
                 if (p['start_page'] != null) 'startPage': p['start_page'],
                 if (p['end_page'] != null) 'endPage': p['end_page'],
+                if (p['pdf_name'] != null) 'pdfName': p['pdf_name'],
               },
           ],
         },
